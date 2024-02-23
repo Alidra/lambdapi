@@ -163,7 +163,7 @@
     "@types/mocha": "^2.2.42",
     "@types/node": "^18.18.1",
     "@types/vscode": "^1.75.0",
-    "typescript": "3.3.1"
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@vscode/vsce": "^2.21.1",
