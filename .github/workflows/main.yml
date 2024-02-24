@@ -25,10 +25,10 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-version }}
       - name: installing dependencies ...
         run: |
-          opam update
-          opam upgrade
-          opam pin add -n -k path lambdapi .
-          opam install --deps-only -d -t lambdapi
+          # opam update
+          # opam upgrade
+          # opam pin add -n -k path lambdapi .
+          # opam install --deps-only -d -t lambdapi
 #      - name: running tests ...
         # run: |
         #   make sanity_check
@@ -38,7 +38,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: latest
       - name: generate-vscode-extension
         run: |
           npm install -g @types/vscode
