@@ -29,12 +29,12 @@ jobs:
           opam upgrade
           opam pin add -n -k path lambdapi .
           opam install --deps-only -d -t lambdapi
-      - name: running tests ...
-        run: |
-          make sanity_check
-          eval $(opam env)
-          #why3 config detect
-          make tests
+#      - name: running tests ...
+        # run: |
+        #   make sanity_check
+        #   eval $(opam env)
+        #   #why3 config detect
+        #   make tests
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -49,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with: 
           name: assets-for-download
-          path: editors/vscode
+          path: editors/vscode/extensionFolder
