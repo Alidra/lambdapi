@@ -23,8 +23,8 @@ jobs:
         uses: avsm/setup-ocaml@v2
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
-      - name: installing dependencies ...
-        run: |
+      # - name: installing dependencies ...
+        # run: |
           # opam update
           # opam upgrade
           # opam pin add -n -k path lambdapi .
