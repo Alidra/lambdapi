@@ -46,5 +46,5 @@ jobs:
       - name: publish vscode extension
         uses: actions/upload-artifact@v4
         with: 
-          name: assets-for-download
+          name: assets-for-download_${{ matrix.ocaml-version }}
           path: editors/vscode/extensionFolder
