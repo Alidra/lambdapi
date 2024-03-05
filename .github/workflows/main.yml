@@ -42,9 +42,9 @@ jobs:
         run: |
           npm install -g @types/vscode
           npm install -g vsce 
-          targetFoled=extensionFolder_${{ matrix.ocaml-version }} make build-vscode-extension
+          targetFoled=extensionFolder targetFile=file_${{ matrix.ocaml-version }}.vsix make build-vscode-extension
       - name: publish vscode extension
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
-          path: editors/vscode/extensionFolder_${{ matrix.ocaml-version }}
+          path: editors/vscode/extensionFolder
