@@ -42,7 +42,7 @@ jobs:
         run: |
           npm install -g @types/vscode
           npm install -g vsce 
-          targetFoled = extensionFolder make build-vscode-extension
+          targetFoled=extensionFolder make build-vscode-extension
       - name: publish vscode extension
         uses: actions/upload-artifact@v2
         with: 
