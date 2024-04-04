@@ -55,7 +55,16 @@ let completed_table : (string, Lp_doc.t) Hashtbl.t = Hashtbl.create 39
 
 (* Notification handling; reply is optional / asynchronous *)
 let do_check_text ofmt ~doc =
-  let doc, diags = Lp_doc.check_text ~doc in
+  let doc, diags =
+  try
+    Lp_doc.check_text ~doc
+  with
+  | Common.Error.Fatal _ -> let loc : Pos.pos = { fname = Some(doc.uri)
+  ; start_line = 0
+  ; start_col  = 0
+  ; end_line = 0
+  ; end_col = 0} in (doc, Lp_doc.mk_error ~doc loc "pkg file is missing!")
+  in
   Hashtbl.replace doc_table doc.uri doc;
   Hashtbl.replace completed_table doc.uri doc;
   LIO.send_json ofmt @@ diags
@@ -81,6 +90,7 @@ let do_open ofmt params =
           ("file " ^ uri ^ " not properly closed by client")
   end;
   Hashtbl.add doc_table uri doc;
+  Lsp_io.log_error "[do_open] uri added to Hashtable: " uri;
   do_check_text ofmt ~doc
 
 let do_change ofmt params =
@@ -137,20 +147,25 @@ let kind_of_type tm =
 
 let do_symbols ofmt ~id params =
   let file, _, doc = grab_doc params in
-  let sym = Pure.get_symbols doc.final in
-  let sym =
-    Extra.StrMap.fold
-      (fun _ s l ->
-        let open Term in
-        (* LIO.log_error "sym"
-         ( s.sym_name ^ " | "
-         ^ Format.asprintf "%a" term !(s.sym_type)); *)
-        Option.map_default
-          (fun p -> mk_syminfo file
-              (s.sym_name, s.sym_path, kind_of_type s, p) :: l) l s.sym_pos)
-      sym [] in
-  let msg = LSP.mk_reply ~id ~result:(`List sym) in
-  LIO.send_json ofmt msg
+    match doc.final with
+    | Some sif ->
+        let sym = Pure.get_symbols sif in
+        let sym =
+          Extra.StrMap.fold
+            (fun _ s l ->
+              let open Term in
+              (* LIO.log_error "sym"
+               ( s.sym_name ^ " | "
+               ^ Format.asprintf "%a" term !(s.sym_type)); *)
+              Option.map_default
+                (fun p -> mk_syminfo file
+                    (s.sym_name, s.sym_path, kind_of_type s, p)
+                    :: l) l s.sym_pos)
+            sym [] in
+        let msg = LSP.mk_reply ~id ~result:(`List sym) in
+        LIO.send_json ofmt msg
+    | None -> let msg = LSP.mk_reply ~id ~result:(`List []) in
+                    LIO.send_json ofmt msg
 
 let get_docTextPosition params =
   let document = dict_field "textDocument" params in
@@ -283,6 +298,7 @@ let get_logs ~doc ~line ~pos : string =
 
 let do_goals ofmt ~id params =
   let uri, line, pos = get_docTextPosition params in
+  Lsp_io.log_error "[do_goals] looking for uri in Hashtable: " uri;
   let doc = Hashtbl.find completed_table uri in
   let line, pos = match get_first_error doc with
     | Some ((_, _), Some loc) ->
@@ -327,8 +343,8 @@ let do_definition ofmt ~id params =
   (*Some printing in the log*)
   LIO.log_error "token map" (RangeMap.to_string snd doc.map);
   LIO.log_error "do_definition" sym_target;
-
-  let sym = Pure.get_symbols doc.final in
+    match doc.final with
+    | Some sif ->   let sym =Pure.get_symbols sif in
   let map_pp : string =
     Extra.StrMap.bindings sym
     |> List.map (fun (key, sym) ->
@@ -352,6 +368,8 @@ let do_definition ofmt ~id params =
           Library.(file_of_path s.Term.sym_path ^ lp_src_extension) pos
   in
   let msg = LSP.mk_reply ~id ~result:sym_info in
+  LIO.send_json ofmt msg
+  | None ->   let msg = LSP.mk_reply ~id ~result:(`List []) in
   LIO.send_json ofmt msg
 
 let hover_symInfo ofmt ~id params =
@@ -381,9 +399,12 @@ let hover_symInfo ofmt ~id params =
 
   LIO.log_error "hoverSymInfo" sym_target;
   LIO.log_error "hoverSymInfo" (Range.interval_to_string interval); *)
-
+  try
   (* The information about the tokens is stored *)
-  let sym = Pure.get_symbols doc.final in
+  let sym =
+    match doc.final with
+    | Some sif -> Pure.get_symbols sif
+    | None -> raise (Error.fatal_no_pos("Horror")) in
 
   (* The start/finish positions are used to hover the full qualified term,
      not just the token *)
@@ -411,7 +432,7 @@ let hover_symInfo ofmt ~id params =
   in
   LIO.log_error "symbol map" map_pp;
 
-  try
+
     let sym_found =
       let open Timed in
       let open Term in
