@@ -46,8 +46,10 @@ jobs:
         with:
           node-version: latest
       - name: generate-vscode-extension
+        with: pat: ${{secrets.VSCODE_PAT}}
         run: |
           echo "hello"
+          echo $pat
           echo $VSCODE_PAT
           echo "bye bye"
           npm install -g @types/vscode
