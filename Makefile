@@ -1,5 +1,7 @@
 VIMDIR = $(HOME)/.vim
 EMACS  = $(shell which emacs)
+VERSION= $(vsce show --json deducteam.lambdapi | jq '.versions[0]' | jq '.version')
+
 
 #### Compilation (binary, library and documentation) #########################
 
@@ -173,4 +175,8 @@ build-vscode-extension:
 
 .PHONY: publish-vscode-extension
 publish-vscode-extension:
-	cd editors/vscode && make && vsce publish -p ${PAT}
+ifeq ($(shell vsce show --json deducteam.lambdapi | jq '.versions[0]' | jq '.version'), $(shell cat editors/vscode/package.json | jq '.version'))
+	echo "extension already exists. Skip"
+else
+	make && vsce publish -p ${PAT}
+endif
