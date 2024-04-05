@@ -178,5 +178,5 @@ publish-vscode-extension:
 ifeq ($(shell vsce show --json deducteam.lambdapi | jq '.versions[0]' | jq '.version'), $(shell cat editors/vscode/package.json | jq '.version'))
 	echo "extension already exists. Skip"
 else
-	make && vsce publish -p ${PAT}
+	cd editors/vscode && make && vsce publish -p ${PAT}
 endif
