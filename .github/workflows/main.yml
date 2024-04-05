@@ -46,7 +46,8 @@ jobs:
         with:
           node-version: latest
       - name: generate-vscode-extension
-        with: pat: ${{secrets.VSCODE_PAT}}
+        with:
+          pat: ${{secrets.VSCODE_PAT}}
         run: |
           echo "hello"
           echo $pat
