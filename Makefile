@@ -170,3 +170,7 @@ uninstall_vim_mode:
 .PHONY: build-vscode-extension
 build-vscode-extension:
 	cd editors/vscode && make && mkdir extensionFolder && vsce package -o extensionFolder
+
+.PHONY: publish-vscode-extension
+publish-vscode-extension:
+	cd editors/vscode && make && vsce publish -p ${PAT}

@@ -39,25 +39,22 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
-      # - name: checking out lambdapi repo ...
-      #   uses: actions/checkout@v4
-      # - name: Use Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: latest
+      - name: checking out lambdapi repo ...
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
       - name: generate-vscode-extension
-        env:
-          pat: ${{secrets.VSCODE_PAT}}
         run: |
-          echo "hello"
-          echo $pat
-          echo $VSCODE_PAT
-          echo "bye bye"
-      #     npm install -g @types/vscode
-      #     npm install -g vsce 
-      #     make build-vscode-extension
-      # - name: publish vscode extension
-      #   uses: actions/upload-artifact@v4
-      #   with: 
-      #     name: assets-for-download
-      #     path: editors/vscode/extensionFolder
+          npm install -g @types/vscode
+          npm install -g vsce 
+          make build-vscode-extension
+          make publish-vscode-extension
+        env:
+          PAT: ${{secrets.VSCODE_PAT}}
+      - name: publish vscode extension
+        uses: actions/upload-artifact@v4
+        with: 
+          name: assets-for-download
+          path: editors/vscode/extensionFolder

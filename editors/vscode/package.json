@@ -1,15 +1,12 @@
 {
-  "name": "lambdapi",
-  "displayName": "lambdapi",
-  "description": "VSCode extension for the Lambdapi proof assistant",
+  "name": "abdelghaniExtension",
+  "displayName": "abdelghani",
+  "description": "VSCode extension for the Abdelghani assistant",
   "contributors": [
-    "Emilio Jesús Gallego Arias <e@x80.org>",
-    "Houda Mouzoun <houda.mouzoun@gmail.com>",
-    "François Lefoulon <francois.lefoulon@lilo.org>",
-    "Ashish Barnawal <ashbrnwl.2000@gmail.com>"
+    "Abdelghani Alidra"
   ],
   "version": "0.2.1",
-  "publisher": "Deducteam",
+  "publisher": "alidrandco",
   "engines": {
     "vscode": "^1.82.0"
   },
@@ -20,13 +17,12 @@
     "interactive theorem proving",
     "dependent types",
     "rewriting",
-    "dedukti",
-    "lambdapi"
+    "Abdelghani"
   ],
-  "homepage": "https://github.com/Deducteam/lambdapi",
+  "homepage": "https://github.com/Alidra",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Deducteam/lambdapi"
+    "url": "https://github.com/alidra"
   },
   "activationEvents": [
     "onLanguage:lp"
