@@ -36,7 +36,7 @@ jobs:
           make tests
       - name: cheking libraries ...
         run: |
-          make checkLibraries
+          make test_libs
   build_vscode_extension:
     strategy:
       fail-fast: false
