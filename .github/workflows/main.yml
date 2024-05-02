@@ -36,8 +36,6 @@ jobs:
           make tests
       - name: cheking libraries ...
         run: |
-          eval $(opam env)
-          #why3 config detect
           make checkLibraries
   build_vscode_extension:
     strategy:
