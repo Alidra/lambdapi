@@ -36,6 +36,7 @@ jobs:
           make tests
       - name: cheking libraries ...
         run: |
+          eval $(opam env)
           make test_libs
   build_vscode_extension:
     strategy:
