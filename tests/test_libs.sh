@@ -18,5 +18,5 @@ test_Lib() {
 }
 
 checkoutLib $1 $2
-options='-w'
+options='-w -c'
 time test_Lib $2
