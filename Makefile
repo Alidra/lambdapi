@@ -188,10 +188,9 @@ publish-vscode-extension:
 ifeq ($(EXT), $(shell cat editors/vscode/package.json | jq '.version'))
 	echo "extension already exists. Skip"
 else
-	ifeq ($(GITHUB_REF_NAME), 'master')
-		cd editors/vscode && vsce publish -p ${PAT}
-	else
-		echo "GITHUB_REF_NAME is $(GITHUB_REF_NAME). Set this env variable to master to force publication of the extension"
-endif
+ifeq ($(GITHUB_REF_NAME), 'master')
+	cd editors/vscode && vsce publish -p ${PAT}
+else
+	echo "GITHUB_REF_NAME is $(GITHUB_REF_NAME). Set this env variable to master to force publication of the extension"
 endif
 endif
