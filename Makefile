@@ -194,3 +194,4 @@ else
 	echo "GITHUB_REF_NAME is $(GITHUB_REF_NAME). Set this env variable to master to force publication of the extension"
 endif
 endif
+endif
