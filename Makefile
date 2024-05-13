@@ -185,8 +185,4 @@ EXT = $(shell vsce show --json deducteam.lambdapi 2>/dev/null | jq '.versions[0]
 
 .PHONY: publish-vscode-extension
 publish-vscode-extension:
-ifeq ($(EXT), $(shell cat editors/vscode/package.json | jq '.version'))
-	echo "extension already exists. Skip"
-else
-	echo "hihi"
-endif
+echo "hihi"
