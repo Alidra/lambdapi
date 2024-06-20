@@ -48,7 +48,6 @@ jobs:
       - name: generate-vscode-extension
         run: |
           npm install -g @vscode/vsce 
-          npm install -g @types/vscode
           make build-vscode-extension
           make publish-vscode-extension
         env:
