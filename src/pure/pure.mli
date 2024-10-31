@@ -4,12 +4,100 @@ open Lplib
 open Core
 open Common
 
+module Loc : sig
+  type t = Pos.pos
+  (* val to_range : Pos. *)
+end
+
+module Message : sig
+  module Payload : sig
+    type 'a t = { range : 'a option; quickFix: string; message: string }
+  end
+
+  type 'a t = 'a Payload.t
+end
+
+module Limits : sig
+
+  module Token : sig
+    type t
+  end
+
+end
+
+module Protect : sig
+
+  (** This modules reifies Coq side effects into an algebraic structure.
+
+      This is obviously very convenient for upper layer programming.
+
+      As of today this includes feedback and exceptions. *)
+  module Error : sig
+    type 'l t = private
+      | User of 'l Message.Payload.t
+      | Anomaly of 'l Message.Payload.t
+  end
+
+  (** This "monad" could be related to "Runners in action" (Ahman, Bauer), thanks
+      to Guillaume Munch-Maccagnoni for the reference and for many useful tips! *)
+  module R : sig
+    type ('a, 'l) t = private
+      | Completed of ('a, 'l Error.t) result
+      | Interrupted (* signal sent, eval didn't complete *)
+
+    val error : string -> ('a, 'l) t
+    val map : f:('a -> 'b) -> ('a, 'l) t -> ('b, 'l) t
+
+    val map_error :
+      f:('l Message.Payload.t -> 'm Message.Payload.t) -> ('a, 'l) t -> ('a, 'm) t
+
+    (** Update the loc stored in the result, this is used by our cache-aware
+        location *)
+    val map_loc : f:('l -> 'm) -> ('a, 'l) t -> ('a, 'm) t
+  end
+
+  module E : sig
+    type ('a, 'l) t = private
+      { r : ('a, 'l) R.t
+      ; feedback : 'l Message.t list
+      }
+
+    val map : f:('a -> 'b) -> ('a, 'l) t -> ('b, 'l) t
+    val map_loc : f:('l -> 'm) -> ('a, 'l) t -> ('a, 'm) t
+    val bind : f:('a -> ('b, 'l) t) -> ('a, 'l) t -> ('b, 'l) t
+    val ok : 'a -> ('a, 'l) t
+    val error : string -> ('a, 'l) t
+
+    module O : sig
+      val ( let+ ) : ('a, 'l) t -> ('a -> 'b) -> ('b, 'l) t
+      val ( let* ) : ('a, 'l) t -> ('a -> ('b, 'l) t) -> ('b, 'l) t
+    end
+  end
+
+  (** Must be hooked to allow [Protect] to capture the feedback. *)
+  val fb_queue : Loc.t Message.t list ref
+
+  (** Eval a function and reify the exceptions. Note [f] _must_ be pure, as in
+      case of anomaly [f] may be re-executed with debug options. Beware, not
+      thread-safe! [token] Does allow to interrupt the evaluation. *)
+  val eval : token:Limits.Token.t -> f:('i -> 'o) -> 'i -> ('o, Loc.t) E.t
+
+end
+
 (** Abstract representation of a command (top-level item). *)
 module Command : sig
   type t
   val equal : t -> t -> bool
   val get_pos : t -> Pos.popt
   val print : t Base.pp [@@ocaml.toplevel_printer]
+end
+
+module Ast : sig
+  type t = Command.t
+  val compare : t -> t -> int
+  val hash : t -> int
+  val loc : t -> Loc.t
+  val print : t -> string
 end
 
 val rangemap : Command.t list -> Term.qident RangeMap.t
@@ -32,6 +120,21 @@ end
 (** Representation of the state when at the toplevel. *)
 type state
 
+module State : sig
+  type t = state
+  val compare : t -> t -> int
+  val hash : t -> int
+end
+
+(* configuration for a document *)
+module Workspace : sig
+  type t = unit
+end
+
+module Files : sig
+  type t = unit
+end
+
 (** Representation of the state when in a proof. *)
 type proof_state
 
@@ -48,6 +151,10 @@ type conclusion =
   | Typ of string * string (** Metavariable name and type. *)
   | Unif of string * string (** LHS and RHS of the unification goal. *)
 type goal = (string * string) list * conclusion
+
+module Goals : sig
+  type t = goal list
+end
 
 (** [current_goals s] returns the list of open goals for proof state [s]. *)
 val current_goals : proof_state -> goal list
@@ -76,6 +183,10 @@ val initial_state : string -> state
     the [Cmd_Proof] constructor), or the command fails (corresponding  to  the
     [Cmd_Error] constuctor). *)
 val handle_command : state -> Command.t -> command_result
+
+module Interp : sig
+  val interp : token:Limits.Token.t -> st:State.t -> Ast.t -> (State.t, Loc.t) Protect.E.t
+end
 
 (** [handle_tactic ps tac n] evaluates the tactic [tac] with [n] subproofs in
    proof state [ps], returning a new proof state (with [Tac_OK]) or an error
