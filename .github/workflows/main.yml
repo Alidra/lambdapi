@@ -58,10 +58,10 @@ jobs:
           npm install -g @types/vscode${{ matrix.types_vscode-version }}
           npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
       - name: generate-vscode-extension
-        run:
-          if: ${{ !env.EXTENSION_GENERATED_ALREADY }}
-            make build-vscode-extension
-            make publish-vscode-extension
+        if: ${{ !env.EXTENSION_GENERATED_ALREADY }}
+        run: |
+          make build-vscode-extension
+          make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
           EXTENSION_GENERATED_ALREADY: ${{ exists('editors/vscode/extensionFolder') }}
