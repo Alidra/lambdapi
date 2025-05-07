@@ -41,8 +41,8 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [latest, v23.11.0]
-        types_vscode-version: [1.99.0, 1.99.1]
-        vscode_vsce-version: [3.3.3-2,  3.3.3-3]
+        types_vscode-version: [\@1.99.0, \@1.99.1]
+        vscode_vsce-version: [\@3.3.3-2,  \@3.3.3-3]
 
     runs-on: ubuntu-latest
     steps:
@@ -54,8 +54,8 @@ jobs:
           node-version: ${{ matrix.ocaml-version }}
       - name: generate-vscode-extension
         run: |
-          "npm install -g @types/vscode$@"{{ matrix.types_vscode-version }}
-          "npm install -g @vscode/vsce$@"{{ matrix.vscode_vsce-version }}
+          npm install -g @types/vscode${{ matrix.types_vscode-version }}
+          npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
           make build-vscode-extension
           make publish-vscode-extension
         env:
