@@ -59,8 +59,7 @@ jobs:
           npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
       - name: generate-vscode-extension
         run:
-        if: ${{ !env.EXTENSION_GENERATED_ALREADY }}
-          |
+          if: ${{ !env.EXTENSION_GENERATED_ALREADY }}
           make build-vscode-extension
           make publish-vscode-extension
         env:
