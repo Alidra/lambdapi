@@ -54,8 +54,8 @@ jobs:
           node-version: ${{ matrix.ocaml-version }}
       - name: generate-vscode-extension
         run: |
-          npm install -g @types/vscode${{ matrix.types_vscode-version }}
-          npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
+          npm install -g @types/vscode$@{{ matrix.types_vscode-version }}
+          npm install -g @vscode/vsce$@{{ matrix.vscode_vsce-version }}
           make build-vscode-extension
           make publish-vscode-extension
         env:
