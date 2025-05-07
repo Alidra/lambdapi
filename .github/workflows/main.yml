@@ -6,39 +6,42 @@ on:
       - '**/*.md'
   workflow_dispatch:
 jobs:
-  lambdapi:
-    strategy:
-      fail-fast: false
-      matrix:
-        ocaml-version: [5.3.0, 5.2.1, 5.1.1, 5.0.0, 4.14.2, 4.13.1, 4.12.1, 4.11.2, 4.10.2, 4.09.1]
-    runs-on: ubuntu-latest
-    steps:
-      - name: checking out lambdapi repo ...
-        uses: actions/checkout@v4
-      # - name: recovering cached opam files ...
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.opam
-      #     key: ${{ runner.os }}-ocaml-${{ matrix.ocaml-version }}
-      - name: setting up opam ...
-        uses: ocaml/setup-ocaml@v3
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-version }}
-      - name: installing dependencies ...
-        run: |
-          opam update
-          opam upgrade
-          opam pin add -n -k path lambdapi .
-          opam install --deps-only -d -t lambdapi
-      - name: running tests ...
-        run: |
-          make sanity_check
-          eval $(opam env)
-          #why3 config detect
-          make tests
+  # lambdapi:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       ocaml-version: [5.3.0, 5.2.1, 5.1.1, 5.0.0, 4.14.2, 4.13.1, 4.12.1, 4.11.2, 4.10.2, 4.09.1]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checking out lambdapi repo ...
+  #       uses: actions/checkout@v4
+  #     # - name: recovering cached opam files ...
+  #     #   uses: actions/cache@v4
+  #     #   with:
+  #     #     path: ~/.opam
+  #     #     key: ${{ runner.os }}-ocaml-${{ matrix.ocaml-version }}
+  #     - name: setting up opam ...
+  #       uses: ocaml/setup-ocaml@v3
+  #       with:
+  #         ocaml-compiler: ${{ matrix.ocaml-version }}
+  #     - name: installing dependencies ...
+  #       run: |
+  #         opam update
+  #         opam upgrade
+  #         opam pin add -n -k path lambdapi .
+  #         opam install --deps-only -d -t lambdapi
+  #     - name: running tests ...
+  #       run: |
+  #         make sanity_check
+  #         eval $(opam env)
+  #         #why3 config detect
+  #         make tests
   vscode:
     strategy:
       fail-fast: false
+      matrix:
+        node-version: [latest, v23.11.0]
+
     runs-on: ubuntu-latest
     steps:
       - name: checking out lambdapi repo ...
@@ -46,7 +49,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'v23.11.0'
+          node-version: ${{ matrix.ocaml-version }}
       - name: generate-vscode-extension
         run: |
           npm install -g @types/vscode
