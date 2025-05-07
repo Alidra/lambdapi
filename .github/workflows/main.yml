@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
-          path: editors/vscode/extensionFolder_${{ matrix.ocaml-version }}_{{ matrix.vscode_vsce-version }}
+          path: editors/vscode/extensionFolder_${{ matrix.ocaml-version }}_${{ matrix.types_vscode-version }}_${{ matrix.vscode_vsce-version }}
   # lint-fmt:
   #   runs-on: ubuntu-latest
   #   steps:
