@@ -60,8 +60,8 @@ jobs:
       - name: generate-vscode-extension
         run:
           if: ${{ !env.EXTENSION_GENERATED_ALREADY }}
-          make build-vscode-extension
-          make publish-vscode-extension
+            make build-vscode-extension
+            make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
           EXTENSION_GENERATED_ALREADY: ${{ exists('editors/vscode/extensionFolder') }}
