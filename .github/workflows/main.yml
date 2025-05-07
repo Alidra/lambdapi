@@ -41,8 +41,8 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [latest, v23.11.0]
-        types_vscode-version: [\@1.99.0, \@1.99.1]
-        vscode_vsce-version: [\@3.3.3-2,  \@3.3.3-3]
+        types_vscode-version: [\@1.99.0, \@1.99.1, ]
+        vscode_vsce-version: [\@3.3.3-2,  \@3.3.3-3, ]
 
     runs-on: ubuntu-latest
     steps:
@@ -52,20 +52,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.ocaml-version }}
-      - name: generate-vscode-extension
+      - name: install-dependencies
         run: |
           node --version
           npm install -g @types/vscode${{ matrix.types_vscode-version }}
           npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
+      - name: generate-vscode-extension
+        run:
+        if: ${{ !env.EXTENSION_GENERATED_ALREADY }}
+          |
           make build-vscode-extension
           make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
+          EXTENSION_GENERATED_ALREADY: ${{ exists('editors/vscode/extensionFolder') }}
       - name: upload vscode extension
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
-          path: editors/vscode/extensionFolder_${{ matrix.ocaml-version }}_${{ matrix.types_vscode-version }}_${{ matrix.vscode_vsce-version }}
+          path: editors/vscode/extensionFolder
   # lint-fmt:
   #   runs-on: ubuntu-latest
   #   steps:
