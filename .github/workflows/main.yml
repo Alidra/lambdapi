@@ -59,7 +59,7 @@ jobs:
         run:
           make build-vscode-extension
       - name: publish-vscode-extension
-        if: ${{ matrix.types_vscode-version == '\@1.99.1' }} and ${{ matrix.vscode_vsce-version == '\@3.3.3-3' }} 
+        if: ${{ matrix.types_vscode-version == '\@1.99.1' && matrix.vscode_vsce-version == '\@3.3.3-3' }} 
         run:
           make publish-vscode-extension
         env:
