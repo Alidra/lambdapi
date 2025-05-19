@@ -59,13 +59,13 @@ jobs:
         run:
           make build-vscode-extension
       - name: publish-vscode-extension
-        if: ${{ matrix.types_vscode-version == '\@1.99.1' && matrix.vscode_vsce-version == '\@3.3.3-3' && ${{ matrix.node-version == 'v23.11.0' }}}} 
+        if: ${{ matrix.types_vscode-version == '\@1.99.1' && matrix.vscode_vsce-version == '\@3.3.3-3' &&  matrix.node-version == 'v23.11.0' }} 
         run:
           make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
       - name: upload vscode extension
-        if: ${{ matrix.types_vscode-version == '\@1.99.1' && matrix.vscode_vsce-version == '\@3.3.3-3' && ${{ matrix.node-version == 'v23.11.0' }}}} 
+        if: ${{ matrix.types_vscode-version == '\@1.99.1' && matrix.vscode_vsce-version == '\@3.3.3-3' &&  matrix.node-version == 'v23.11.0' }} 
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
