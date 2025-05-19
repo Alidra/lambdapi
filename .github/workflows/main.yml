@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [v23.11.0]
+        node-version: [latest, v23.11.0]
         types_vscode-version: [\@1.99.0, \@1.99.1, '' ]
         vscode_vsce-version: [\@3.3.3-2,  \@3.3.3-3, '' ]
     runs-on: ubuntu-latest
@@ -50,11 +50,12 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.ocaml-version }}
+          node-version: ${{ matrix.node-version }}
       - name: install-dependencies
         run: |
           npm install -g @types/vscode${{ matrix.types_vscode-version }}
           npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
+          node --version
           npm list -g @types/vscode
           vsce --version
 
