@@ -60,6 +60,7 @@ jobs:
           make build-vscode-extension
       - name: publish-vscode-extension
         if: ${{ matrix.types_vscode-version == '\@1.99.1' }}
+        run:
           make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
