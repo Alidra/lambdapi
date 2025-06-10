@@ -35,31 +35,31 @@ jobs:
           else
             echo "triggerPublishAndUpload=False" >> $GITHUB_OUTPUT
           fi
-      - name: checking out lambdapi repo ...
-        uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: install-dependencies
-        run: |
-          npm install -g @types/vscode${{ matrix.types_vscode-version }}
-          npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
+      # - name: checking out lambdapi repo ...
+      #   uses: actions/checkout@v4
+      # - name: Use Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: ${{ matrix.node-version }}
+      # - name: install-dependencies
+      #   run: |
+      #     npm install -g @types/vscode${{ matrix.types_vscode-version }}
+      #     npm install -g @vscode/vsce${{ matrix.vscode_vsce-version }}
 
-      - name: generate-vscode-extension
-        run:
-          make build-vscode-extension
+      # - name: generate-vscode-extension
+      #   run:
+      #     make build-vscode-extension
 
       - name: publish-vscode-extension
         if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
         run:
-          make publish-vscode-extension
+          echo True
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
           
-      - name: upload vscode extension
-        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
-        uses: actions/upload-artifact@v4
-        with: 
-          name: assets-for-download
-          path: editors/vscode/extensionFolder
+      # - name: upload vscode extension
+      #   if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
+      #   uses: actions/upload-artifact@v4
+      #   with: 
+      #     name: assets-for-download
+      #     path: editors/vscode/extensionFolder
