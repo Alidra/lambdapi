@@ -6,6 +6,7 @@ on:
       - '**/*.md'
       - 'doc/*'
       - 'editors/*'
+      - '.github/workflows/vscode.yml'
   workflow_dispatch:
 jobs:
   lambdapi:

@@ -4,10 +4,10 @@ on:
   push:
     paths-ignore:
       - '**/*.md'
+      - 'doc/*'
       - 'editors/emacs/*'
       - 'editors/vim/*'
-      - 'doc/*'
-      - 'editors/*'
+      - '.github/workflows/main.yml'
       - 'libraries/*'
       - 'misc/*'
       - 'src/*'
