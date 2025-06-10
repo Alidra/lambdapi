@@ -30,7 +30,7 @@ jobs:
       - name: set_triggerPublishAndUpload
         id: set_triggerPublishAndUpload
         run: |
-          if [ "${{ types_vscode-version == '' && vscode_vsce-version == '' &&  node-version == 'latest' }}" ]; then
+          if [ "${{ matrix.types_vscode-version == '' && matrix.vscode_vsce-version == '' &&  matrix.node-version == 'latest' }}" ]; then
             echo "triggerPublishAndUpload=True" >> $GITHUB_OUTPUT
           else
             echo "triggerPublishAndUpload=False" >> $GITHUB_OUTPUT
