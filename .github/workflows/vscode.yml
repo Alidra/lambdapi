@@ -51,14 +51,14 @@ jobs:
           make build-vscode-extension
 
       - name: publish-vscode-extension
-        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
+        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'False' }}
         run:
           make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
           
       - name: upload vscode extension
-        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
+        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'False' }}
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
