@@ -28,6 +28,14 @@ jobs:
         triggerPublishAndUpload: ${{ types_vscode-version == '' && vscode_vsce-version == '' &&  node-version == 'latest' }}
     runs-on: ubuntu-latest
     steps:
+      - name: set_triggerPublishAndUpload
+        id: set_triggerPublishAndUpload
+        run: |
+          if [ "${{ types_vscode-version == '' && vscode_vsce-version == '' &&  node-version == 'latest' }}" ]; then
+            echo "triggerPublishAndUpload=True" >> $GITHUB_OUTPUT
+          else
+            echo "triggerPublishAndUpload=False" >> $GITHUB_OUTPUT
+          fi
       - name: checking out lambdapi repo ...
         uses: actions/checkout@v4
       - name: Use Node.js
@@ -44,14 +52,14 @@ jobs:
           make build-vscode-extension
 
       - name: publish-vscode-extension
-        if: ${{ matrix.triggerPublishAndUpload == 'True' }}
+        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
         run:
           make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
           
       - name: upload vscode extension
-        if: ${{ matrix.triggerPublishAndUpload == 'True' }}
+        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
