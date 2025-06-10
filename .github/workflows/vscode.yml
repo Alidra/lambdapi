@@ -30,7 +30,7 @@ jobs:
       - name: set_triggerPublishAndUpload
         id: set_triggerPublishAndUpload
         run: |
-          if [ "${{ matrix.types_vscode-version == '' && matrix.vscode_vsce-version == '' &&  matrix.node-version == 'latest' }}" ]; then
+          if [ "${{ matrix.types_vscode-version == 'ffffff' && matrix.vscode_vsce-version == 'fdfdfdfdfdfd' &&  matrix.node-version == 'latest' }}" ]; then
             echo "triggerPublishAndUpload=True" >> $GITHUB_OUTPUT
           else
             echo "triggerPublishAndUpload=False" >> $GITHUB_OUTPUT
@@ -51,14 +51,14 @@ jobs:
           make build-vscode-extension
 
       - name: publish-vscode-extension
-        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'False' }}
+        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
         run:
           make publish-vscode-extension
         env:
           PAT: ${{ secrets.VSCODE_PAT }}
           
       - name: upload vscode extension
-        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'False' }}
+        if: ${{ steps.set_triggerPublishAndUpload.outputs.triggerPublishAndUpload == 'True' }}
         uses: actions/upload-artifact@v4
         with: 
           name: assets-for-download
