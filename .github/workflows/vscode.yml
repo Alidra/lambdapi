@@ -30,7 +30,7 @@ jobs:
       - name: set_triggerPublishAndUpload
         id: set_triggerPublishAndUpload
         run: |
-          if [ ${{ matrix.types_vscode-version }} == '' ]; then
+          if [ "${{ matrix.types_vscode-version }}" == '\@1.99.0' ]; then
             echo "triggerPublishAndUpload=True" >> $GITHUB_OUTPUT
           else
             echo "triggerPublishAndUpload=False" >> $GITHUB_OUTPUT
