@@ -25,7 +25,6 @@ jobs:
         node-version: [latest, v23.11.0]
         types_vscode-version: [\@1.99.0, \@1.99.1, '' ]
         vscode_vsce-version: [\@3.3.3-2,  \@3.3.3-3, '' ]
-        triggerPublishAndUpload: ${{ matrix.types_vscode-version == '' && matrix.vscode_vsce-version == '' &&  matrix.node-version == 'latest' }}
     runs-on: ubuntu-latest
     steps:
       - name: set_triggerPublishAndUpload
