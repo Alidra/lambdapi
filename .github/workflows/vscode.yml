@@ -2,6 +2,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
+    paths:
+      - 'editors/vscode/*'
+      - '.github/*.*'
+      - '.readthedocs.yaml'
+      - 'Makefile'
     paths-ignore:
       - '**/*.md'
   workflow_dispatch:
