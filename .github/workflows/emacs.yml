@@ -2,19 +2,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
-    paths-ignore:
-      - '**/*.md'
-      - 'doc/**'
-      - 'editors/**'
-      - '.github/workflows/vscode.yml'
+    paths:
       - '.github/workflows/emacs.yml'
+      - 'editors/emacs/**'
   workflow_dispatch:
 jobs:
   lambdapi:
     strategy:
       fail-fast: false
-      matrix:
-        ocaml-version: [5.3.0, 5.2.1, 5.1.1, 5.0.0, 4.14.2, 4.13.1, 4.12.1, 4.11.2, 4.10.2, 4.09.1]
     runs-on: ubuntu-latest
     steps:
       - name: checking out lambdapi repo ...
@@ -27,16 +22,14 @@ jobs:
       - name: setting up opam ...
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-version }}
+          ocaml-compiler: latest
       - name: installing dependencies ...
         run: |
           opam update
           opam upgrade
           opam pin add -n -k path lambdapi .
           opam install --deps-only -d -t lambdapi
-      - name: running tests ...
+      - name: build Emacs mode
         run: |
-          make sanity_check
-          eval $(opam env)
-          #why3 config detect
-          make tests
+          editors/emacs/installAndLaunch.sh
+          
