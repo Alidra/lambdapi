@@ -22,7 +22,7 @@ jobs:
       - name: setting up opam ...
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: latest
+          ocaml-compiler: 5.3.0
       - name: installing dependencies ...
         run: |
           opam update
