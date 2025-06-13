@@ -40,6 +40,7 @@ cat <<'EOF' > ~/.emacs.d/init.el
 EOF
 
 echo "🚀 Premier lancement d’Emacs pour déclencher l’installation..."
-PATH="$BIN:$PATH" emacs --batch -l ~/.emacs.d/init.el --eval="(progn (package-install-file \"${NAME}-${VERSION}.tar\") (message \"✅ Eglot 1.17 installé via straight.el\") (kill-emacs))"
+echo
+PATH="$BIN:$PATH" emacs --batch -l ~/.emacs.d/init.el --eval="(package-install-file \"${NAME}-${VERSION}.tar\") "
 
 echo "🎉 Terminé ! Lance Emacs normalement pour commencer à coder avec Eglot 1.17."
