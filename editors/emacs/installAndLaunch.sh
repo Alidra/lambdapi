@@ -1,6 +1,9 @@
 #!/bin/bash
 
 set -e
+NAME="$1"
+VERSION="$2"
+BIN="$3"
 
 echo "🔧 Mise à jour du système..."
 sudo apt update && sudo apt install -y git curl
@@ -37,6 +40,6 @@ cat <<'EOF' > ~/.emacs.d/init.el
 EOF
 
 echo "🚀 Premier lancement d’Emacs pour déclencher l’installation..."
-emacs --batch -l ~/.emacs.d/init.el --eval="(message \"✅ Eglot 1.17 installé via straight.el\")"
+PATH="$BIN:$PATH" emacs --batch -l ~/.emacs.d/init.el --eval="(progn (package-install-file \"${NAME}-${VERSION}.tar\") (message \"✅ Eglot 1.17 installé via straight.el\") (kill-emacs))"
 
 echo "🎉 Terminé ! Lance Emacs normalement pour commencer à coder avec Eglot 1.17."
