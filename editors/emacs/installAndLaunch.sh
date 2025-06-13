@@ -34,6 +34,8 @@ cat <<'EOF' > ~/.emacs.d/init.el
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
+(use-package math-symbol-lists)
+(use-package highlight)
 ;; Installer Eglot version 1.17
 (use-package eglot
   :straight (:host github :repo "joaotavora/eglot" :tag "1.17"))
