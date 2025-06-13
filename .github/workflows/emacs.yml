@@ -31,5 +31,8 @@ jobs:
       #     opam install --deps-only -d -t lambdapi
       - name: build Emacs mode
         run: |
+          pwd
+          ls -l
+          ls -l editors/emacs/installAndLaunch.sh
           editors/emacs/installAndLaunch.sh
           

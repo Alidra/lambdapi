@@ -8,6 +8,7 @@ on:
       - 'editors/emacs/**'
       - 'editors/vim/**'
       - '.github/workflows/main.yml'
+      - '.github/workflows/emacs.yml'
       - 'libraries/**'
       - 'misc/**'
       - 'src/**'
