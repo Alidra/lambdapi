@@ -14,21 +14,21 @@ jobs:
     steps:
       - name: checking out lambdapi repo ...
         uses: actions/checkout@v4
-      # # - name: recovering cached opam files ...
-      # #   uses: actions/cache@v4
-      # #   with:
-      # #     path: ~/.opam
-      # #     key: ${{ runner.os }}-ocaml-${{ matrix.ocaml-version }}
-      # - name: setting up opam ...
-      #   uses: ocaml/setup-ocaml@v3
+      # - name: recovering cached opam files ...
+      #   uses: actions/cache@v4
       #   with:
-      #     ocaml-compiler: 5.3.0
-      # - name: installing dependencies ...
-      #   run: |
-      #     opam update
-      #     opam upgrade
-      #     opam pin add -n -k path lambdapi .
-      #     opam install --deps-only -d -t lambdapi
+      #     path: ~/.opam
+      #     key: ${{ runner.os }}-ocaml-${{ matrix.ocaml-version }}
+      - name: setting up opam ...
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: 5.3.0
+      - name: installing dependencies ...
+        run: |
+          opam update
+          opam upgrade
+          opam pin add -n -k path lambdapi .
+          opam install --deps-only -d -t lambdapi
       - name: build Emacs mode
         run: |
           cd editors/emacs/
