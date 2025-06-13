@@ -39,6 +39,9 @@ check: dist
 	cd ../.. && $(MAKE) lambdapi
 	./test.sh "$(NAME)" "$(VERSION)" "$(LAMBDAPI)"
 
+pipeline: dist
+	./installAndLaunch.sh
+
 .PHONY: clean
 clean:
 	rm -fr "$(NAME)-$(VERSION)".tar "$(NAME)-$(VERSION)" lambdapi-mode-pkg.el

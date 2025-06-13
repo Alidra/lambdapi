@@ -33,5 +33,5 @@ jobs:
         run: |
           cd editors/emacs/
           make dist
-          ./installAndLaunch.sh
+          make pipeline
           
