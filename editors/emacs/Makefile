@@ -40,7 +40,7 @@ check: dist
 	./test.sh "$(NAME)" "$(VERSION)" "$(LAMBDAPI)"
 
 pipeline: dist
-	./installAndLaunch.sh
+	./installAndLaunch.sh "$(NAME)" "$(VERSION)" "$(LAMBDAPI)"
 
 .PHONY: clean
 clean:
