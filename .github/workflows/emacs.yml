@@ -32,8 +32,6 @@ jobs:
       - name: build Emacs mode
         run: |
           pwd
-          ls -l .
-          ls -l editors
-          ls -l editors/emacs/installAndLaunch.sh
+          ls -l *
           editors/emacs/installAndLaunch.sh
           
