@@ -43,6 +43,7 @@ EOF
 
 echo "🚀 Premier lancement d’Emacs pour déclencher l’installation..."
 echo
-PATH="$BIN:$PATH" emacs --batch -l ~/.emacs.d/init.el --eval="(package-install-file \"${NAME}-${VERSION}.tar\") "
+PATH="$BIN:$PATH" emacs --batch -l ~/.emacs.d/init.el \
+  --eval="(package-install-file \"${NAME}-${VERSION}.tar\") "
 
 echo "🎉 Terminé ! Lance Emacs normalement pour commencer à coder avec Eglot 1.17."
