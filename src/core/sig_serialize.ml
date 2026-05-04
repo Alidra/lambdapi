@@ -6,6 +6,9 @@ open Common
 open Error
 open Timed
 
+module Version_1_0_0 = struct
+
+let ser_version = "1.0.0"
 
 let strmap_to_yojson to_elt (m : 'a StrMap.t) : Yojson.Safe.t =
   `List (
@@ -197,9 +200,10 @@ let of_sign_serializable (s:t) : Sign.t =
   ; sign_cp_pos   = Timed.ref s.sign_cp_pos
   }
 
+end
 
 let to_yojson_with_version (t : Sign.t) (version : string) : Yojson.Safe.t =
-  match to_yojson (to_sign_serializable t) with
+  match Version_1_0_0.to_yojson (Version_1_0_0.to_sign_serializable t) with
   | `Assoc fields ->
     `Assoc (("version", `String version) :: fields)
   | _ -> assert false
@@ -210,16 +214,17 @@ let of_yojson_with_version json =
     |> Yojson.Safe.Util.member "version"
     |> Yojson.Safe.Util.to_string in
 
-  if version <> Version.version then
+  if version <> Version_1_0_0.ser_version then
         raise (Failure
           ("Version " ^ version ^ " found but in lpo file but" ^
           Version.version ^ "expected (current)"));
 
     match json with
     |`Assoc fields ->
-        begin match of_yojson (`Assoc (List.remove_assoc "version" fields))
+        begin match
+        Version_1_0_0.of_yojson (`Assoc (List.remove_assoc "version" fields))
         with
-        | Ok s -> Ok (of_sign_serializable s)
+        | Ok s -> Ok (Version_1_0_0.of_sign_serializable s)
         | Error e -> Error e
       end
     |_ -> raise (Failure "Unknown po format.
@@ -234,7 +239,8 @@ let write : Sign.t -> string -> unit = fun sign fname ->
   match Unix.fork () with
   | 0 -> let oc = open_out fname in
          unlink sign;
-         let sign_json = to_yojson_with_version sign Version.version  in
+         let sign_json =
+          to_yojson_with_version sign Version_1_0_0.ser_version in
          let _pp = Yojson.Safe.pretty_to_string sign_json in
          Yojson.Safe.to_channel oc sign_json;
          (* Marshal.to_channel oc sign [Marshal.Closures]; *)
