@@ -6,207 +6,236 @@ open Common
 open Error
 open Timed
 
-module Version_1_0_0 = struct
+module type Serialisation = sig
+  val ser_version : string
+  (* val to_sign_serializable : sign -> sign_serializable
+  val of_sign_serializable : sign_serializable -> sign *)
+  val to_yojson : Sign.t -> Yojson.Safe.t
+  val of_yojson : Yojson.Safe.t -> (Sign.t, string) result
+end
 
-let ser_version = "1.0.0"
+module Latest : Serialisation = struct
+  let ser_version = "1.0.0"
 
-let strmap_to_yojson to_elt (m : 'a StrMap.t) : Yojson.Safe.t =
-  `List (
-    StrMap.bindings m
-    |> List.map (fun (k, v) ->
-         `List [`String k; to_elt v])
-  )
-
-let strmap_of_yojson of_elt (json : Yojson.Safe.t)
-  : ('a StrMap.t, string) result =
-  match json with
-  | `List lst ->
-      let rec aux acc = function
-        | [] -> Ok acc
-        | `List [`String k; v_json] :: tl ->
-            begin match of_elt v_json with
-            | Ok v -> aux (StrMap.add k v acc) tl
-            | Error e -> Error e
-            end
-        | _ -> Error "StrMap.of_yojson: invalid entry"
-      in
-      aux StrMap.empty lst
-  | _ -> Error "StrMap.of_yojson: expected list"
-
-let pathmap_to_yojson to_elt (m : 'a Path.Map.t) : Yojson.Safe.t =
-   `List (
-    Path.Map.bindings m
+  let strmap_to_yojson to_elt (m : 'a StrMap.t) : Yojson.Safe.t =
+    `List (
+      StrMap.bindings m
       |> List.map (fun (k, v) ->
-        `List [`String (Format.asprintf "%a" Path.Path.pp k); to_elt v]
-   ))
+           `List [`String k; to_elt v])
+    )
 
-let pathmap_of_yojson of_elt json =
-  match json with
-  | `List lst ->
-    let rec aux acc l =
-      match l with
-      | [] -> Ok acc
-      | `List [`String k; v_json] :: lt ->
-        begin match of_elt v_json with
-        | Ok v ->
-          aux (Path.Map.add (Path.Path.make k) v acc) lt
-        | Error e -> Error e
-        end
-      | _ -> Error "pas list"
-    in
-    aux Path.Map.empty lst
-  | _ -> Error "pathmap_of_yojson: expected list"
+  let strmap_of_yojson of_elt (json : Yojson.Safe.t)
+    : ('a StrMap.t, string) result =
+    match json with
+    | `List lst ->
+        let rec aux acc = function
+          | [] -> Ok acc
+          | `List [`String k; v_json] :: tl ->
+              begin match of_elt v_json with
+              | Ok v -> aux (StrMap.add k v acc) tl
+              | Error e -> Error e
+              end
+          | _ -> Error "StrMap.of_yojson: invalid entry"
+        in
+        aux StrMap.empty lst
+    | _ -> Error "StrMap.of_yojson: expected list"
 
+  let pathmap_to_yojson to_elt (m : 'a Path.Map.t) : Yojson.Safe.t =
+     `List (
+      Path.Map.bindings m
+        |> List.map (fun (k, v) ->
+          `List [`String (Format.asprintf "%a" Path.Path.pp k); to_elt v]
+     ))
 
-let symmap_to_yojson to_elt (m : 'a SymMap.t) : Yojson.Safe.t =
-  `List (
-    SymMap.bindings m
-    |> List.map (fun (k, v) ->
-         `List [ sym_to_yojson k; to_elt v ])
-  )
-
-let symmap_of_yojson of_elt (json : Yojson.Safe.t)
-  : ('a SymMap.t, string) result =
-  match json with
-  | `List lst ->
-      let rec aux acc = function
+  let pathmap_of_yojson of_elt json =
+    match json with
+    | `List lst ->
+      let rec aux acc l =
+        match l with
         | [] -> Ok acc
-        | `List [k_json; v_json] :: tl ->
-            begin match (sym_of_yojson k_json), of_elt v_json with
-            | Ok k, Ok v ->
-                aux (SymMap.add k v acc) tl
-            | Error e, _ -> Error e
-            | _, Error e -> Error e
-            end
-        | _ -> Error "SymMap.of_yojson: invalid entry"
+        | `List [`String k; v_json] :: lt ->
+          begin match of_elt v_json with
+          | Ok v ->
+            aux (Path.Map.add (Path.Path.make k) v acc) lt
+          | Error e -> Error e
+          end
+        | _ -> Error "pas list"
       in
-      aux SymMap.empty lst
-  | _ -> Error "SymMap.of_yojson: expected list"
+      aux Path.Map.empty lst
+    | _ -> Error "pathmap_of_yojson: expected list"
 
 
-module StrMap = struct
-include StrMap
-  let to_yojson to_elt m = strmap_to_yojson to_elt m
-  let of_yojson of_elt json = strmap_of_yojson of_elt json
-end
+  let symmap_to_yojson to_elt (m : 'a SymMap.t) : Yojson.Safe.t =
+    `List (
+      SymMap.bindings m
+      |> List.map (fun (k, v) ->
+           `List [ sym_to_yojson k; to_elt v ])
+    )
 
-module Path = struct
-  include Path
-  module Map = struct
-  include Map
-    let to_yojson to_elm m =
-         pathmap_to_yojson to_elm m
-    let of_yojson of_elm m =
-          pathmap_of_yojson of_elm m
+  let symmap_of_yojson of_elt (json : Yojson.Safe.t)
+    : ('a SymMap.t, string) result =
+    match json with
+    | `List lst ->
+        let rec aux acc = function
+          | [] -> Ok acc
+          | `List [k_json; v_json] :: tl ->
+              begin match (sym_of_yojson k_json), of_elt v_json with
+              | Ok k, Ok v ->
+                  aux (SymMap.add k v acc) tl
+              | Error e, _ -> Error e
+              | _, Error e -> Error e
+              end
+          | _ -> Error "SymMap.of_yojson: invalid entry"
+        in
+        aux SymMap.empty lst
+    | _ -> Error "SymMap.of_yojson: expected list"
+
+
+  module StrMap = struct
+  include StrMap
+    let to_yojson to_elt m = strmap_to_yojson to_elt m
+    let of_yojson of_elt json = strmap_of_yojson of_elt json
   end
+
+  module Path = struct
+    include Path
+    module Map = struct
+    include Map
+      let to_yojson to_elm m =
+           pathmap_to_yojson to_elm m
+      let of_yojson of_elm m =
+            pathmap_of_yojson of_elm m
+    end
+  end
+
+  module SymMap = struct
+  include SymMap
+  let to_yojson to_elm m =
+    symmap_to_yojson to_elm m
+  let of_yojson of_elm m =
+    symmap_of_yojson of_elm  m
+  end
+
+  type ind_data =
+    { ind_cons : sym list
+    ; ind_prop : sym
+    ; ind_nb_params : int (** Number of parameters. *)
+    ; ind_nb_types : int  (** Number of mutually defined types. *)
+    ; ind_nb_cons : int   (** Number of constructors. *) }
+    [@@deriving yojson]
+
+  let rule_to_yojson r = rule_serializable_to_yojson (to_rule_serializable r)
+  let rule_of_yojson j =
+    match rule_serializable_of_yojson j with
+    | Ok r -> Ok (of_rule_serializable r)
+    | Error e -> Error e
+
+  type sym_data =
+    { rules : rule list
+    ; nota : float notation option }[@@deriving yojson]
+
+  type dep_data =
+    { dep_symbols : sym_data StrMap.t
+    ; dep_open : bool }
+    [@@deriving yojson]
+
+  let to_ind_data_serializable (i : Sign.ind_data) : ind_data =
+    { ind_cons      = i.ind_cons
+    ; ind_prop      = i.ind_prop
+    ; ind_nb_params = i.ind_nb_params
+    ; ind_nb_types  = i.ind_nb_types
+    ; ind_nb_cons   = i.ind_nb_cons
+    }
+
+  let of_ind_data_serializable (i : ind_data) : Sign.ind_data =
+    { ind_cons      = i.ind_cons
+    ; ind_prop      = i.ind_prop
+    ; ind_nb_params = i.ind_nb_params
+    ; ind_nb_types  = i.ind_nb_types
+    ; ind_nb_cons   = i.ind_nb_cons
+    }
+
+  let to_sym_data_serializable (s : Sign.sym_data) : sym_data =
+    { rules = s.rules
+    ; nota  = s.nota}
+
+    let of_sym_data_serializable (s : sym_data) : Sign.sym_data =
+    { rules = s.rules
+    ; nota  = s.nota}
+
+  let to_dep_data_serializable (d:Sign.dep_data) : dep_data =
+    {   dep_symbols = StrMap.map to_sym_data_serializable d.dep_symbols
+      ; dep_open  = d.dep_open
+    }
+
+  let of_dep_data_serializable (d:dep_data) : Sign.dep_data =
+    {   dep_symbols = StrMap.map of_sym_data_serializable d.dep_symbols
+      ; dep_open  = d.dep_open
+    }
+
+  type t =
+    { sign_symbols  : sym StrMap.t
+    ; sign_path     : Path.t
+    ; sign_deps     : dep_data Path.Map.t
+    ; sign_builtins : sym StrMap.t
+    ; sign_ind      : ind_data SymMap.t
+    ; sign_cp_pos   : cp_pos list SymMap.t
+    }
+    [@@deriving yojson]
+
+  let to_sign_serializable (s:Sign.t) : t =
+    { sign_symbols  = Timed.(!)s.sign_symbols
+    ; sign_path     = s.sign_path
+    ; sign_deps     = (Path.Map.map
+                        (fun d -> to_dep_data_serializable d)
+                        (Timed.(!)s.sign_deps))
+    ; sign_builtins = Timed.(!)s.sign_builtins
+    ; sign_ind      = (SymMap.map
+                        (fun c -> to_ind_data_serializable c)
+                        (Timed.(!)(s.sign_ind)))
+    ; sign_cp_pos   = Timed.(!)s.sign_cp_pos
+    }
+
+  let of_sign_serializable (s:t) : Sign.t =
+    { sign_symbols  = Timed.ref s.sign_symbols
+    ; sign_path     = s.sign_path
+    ; sign_deps     = Timed.ref (Path.Map.map
+                        (fun d -> of_dep_data_serializable d) (s.sign_deps))
+    ; sign_builtins = Timed.ref s.sign_builtins
+    ; sign_ind      = Timed.ref (SymMap.map
+                        (fun c -> of_ind_data_serializable c) s.sign_ind)
+    ; sign_cp_pos   = Timed.ref s.sign_cp_pos
+    }
+
+  let to_yojson s = to_yojson (to_sign_serializable s)
+  let of_yojson json =
+    match json with
+    |`Assoc fields ->
+        begin match
+        of_yojson (`Assoc (List.remove_assoc "version" fields))
+        with
+        | Ok s -> Ok (of_sign_serializable s)
+        | Error e -> Error e
+      end
+    |_ -> raise (Failure "Unknown po format.
+                Field version missing or corrupted file")
 end
 
-module SymMap = struct
-include SymMap
-let to_yojson to_elm m =
-  symmap_to_yojson to_elm m
-let of_yojson of_elm m =
-  symmap_of_yojson of_elm  m
-end
-
-type ind_data =
-  { ind_cons : sym list
-  ; ind_prop : sym
-  ; ind_nb_params : int (** Number of parameters. *)
-  ; ind_nb_types : int  (** Number of mutually defined types. *)
-  ; ind_nb_cons : int   (** Number of constructors. *) }
-  [@@deriving yojson]
-
-let rule_to_yojson r = rule_serializable_to_yojson (to_rule_serializable r)
-let rule_of_yojson j =
-  match rule_serializable_of_yojson j with
-  | Ok r -> Ok (of_rule_serializable r)
-  | Error e -> Error e
-
-type sym_data =
-  { rules : rule list
-  ; nota : float notation option }[@@deriving yojson]
-
-type dep_data =
-  { dep_symbols : sym_data StrMap.t
-  ; dep_open : bool }
-  [@@deriving yojson]
-
-let to_ind_data_serializable (i : Sign.ind_data) : ind_data =
-  { ind_cons      = i.ind_cons
-  ; ind_prop      = i.ind_prop
-  ; ind_nb_params = i.ind_nb_params
-  ; ind_nb_types  = i.ind_nb_types
-  ; ind_nb_cons   = i.ind_nb_cons
-  }
-
-let of_ind_data_serializable (i : ind_data) : Sign.ind_data =
-  { ind_cons      = i.ind_cons
-  ; ind_prop      = i.ind_prop
-  ; ind_nb_params = i.ind_nb_params
-  ; ind_nb_types  = i.ind_nb_types
-  ; ind_nb_cons   = i.ind_nb_cons
-  }
-
-let to_sym_data_serializable (s : Sign.sym_data) : sym_data =
-  { rules = s.rules
-  ; nota  = s.nota}
-
-  let of_sym_data_serializable (s : sym_data) : Sign.sym_data =
-  { rules = s.rules
-  ; nota  = s.nota}
-
-let to_dep_data_serializable (d:Sign.dep_data) : dep_data =
-  {   dep_symbols = StrMap.map to_sym_data_serializable d.dep_symbols
-    ; dep_open  = d.dep_open
-  }
-
-let of_dep_data_serializable (d:dep_data) : Sign.dep_data =
-  {   dep_symbols = StrMap.map of_sym_data_serializable d.dep_symbols
-    ; dep_open  = d.dep_open
-  }
-
-type t =
-  { sign_symbols  : sym StrMap.t
-  ; sign_path     : Path.t
-  ; sign_deps     : dep_data Path.Map.t
-  ; sign_builtins : sym StrMap.t
-  ; sign_ind      : ind_data SymMap.t
-  ; sign_cp_pos   : cp_pos list SymMap.t
-  }
-  [@@deriving yojson]
-
-let to_sign_serializable (s:Sign.t) : t =
-  { sign_symbols  = Timed.(!)s.sign_symbols
-  ; sign_path     = s.sign_path
-  ; sign_deps     = (Path.Map.map
-                      (fun d -> to_dep_data_serializable d)
-                      (Timed.(!)s.sign_deps))
-  ; sign_builtins = Timed.(!)s.sign_builtins
-  ; sign_ind      = (SymMap.map
-                      (fun c -> to_ind_data_serializable c)
-                      (Timed.(!)(s.sign_ind)))
-  ; sign_cp_pos   = Timed.(!)s.sign_cp_pos
-  }
-
-let of_sign_serializable (s:t) : Sign.t =
-  { sign_symbols  = Timed.ref s.sign_symbols
-  ; sign_path     = s.sign_path
-  ; sign_deps     = Timed.ref (Path.Map.map
-                      (fun d -> of_dep_data_serializable d) (s.sign_deps))
-  ; sign_builtins = Timed.ref s.sign_builtins
-  ; sign_ind      = Timed.ref (SymMap.map
-                      (fun c -> of_ind_data_serializable c) s.sign_ind)
-  ; sign_cp_pos   = Timed.ref s.sign_cp_pos
-  }
-
-end
 
 let to_yojson_with_version (t : Sign.t) (version : string) : Yojson.Safe.t =
-  match Version_1_0_0.to_yojson (Version_1_0_0.to_sign_serializable t) with
+  match Latest.to_yojson t with
   | `Assoc fields ->
     `Assoc (("version", `String version) :: fields)
   | _ -> assert false
+
+let select_serialization_module version =
+    match version with
+    | "1.0.0" -> (module Latest : Serialisation)
+    | _ -> raise (Failure
+          ("Unable to import from version " ^ version ^
+          " to current version" ^ Latest.ser_version ^ "." ^
+          "Please define a compatibility module" ^ version ^ " to " ^
+          Latest.ser_version))
 
 let of_yojson_with_version json =
   let version =
@@ -214,17 +243,15 @@ let of_yojson_with_version json =
     |> Yojson.Safe.Util.member "version"
     |> Yojson.Safe.Util.to_string in
 
-  if version <> Version_1_0_0.ser_version then
-        raise (Failure
-          ("Version " ^ version ^ " found but in lpo file but" ^
-          Version.version ^ "expected (current)"));
+  let module Target_module = (val select_serialization_module version)
+  in
 
     match json with
     |`Assoc fields ->
         begin match
-        Version_1_0_0.of_yojson (`Assoc (List.remove_assoc "version" fields))
+        Target_module.of_yojson (`Assoc (List.remove_assoc "version" fields))
         with
-        | Ok s -> Ok (Version_1_0_0.of_sign_serializable s)
+        | Ok s -> Ok s
         | Error e -> Error e
       end
     |_ -> raise (Failure "Unknown po format.
@@ -240,7 +267,7 @@ let write : Sign.t -> string -> unit = fun sign fname ->
   | 0 -> let oc = open_out fname in
          unlink sign;
          let sign_json =
-          to_yojson_with_version sign Version_1_0_0.ser_version in
+          to_yojson_with_version sign Latest.ser_version in
          let _pp = Yojson.Safe.pretty_to_string sign_json in
          Yojson.Safe.to_channel oc sign_json;
          (* Marshal.to_channel oc sign [Marshal.Closures]; *)
