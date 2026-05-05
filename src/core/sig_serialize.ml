@@ -222,20 +222,64 @@ module Latest : Serialisation = struct
 end
 
 
-let to_yojson_with_version (t : Sign.t) (version : string) : Yojson.Safe.t =
-  match Latest.to_yojson t with
+module Version_0 : Serialisation = struct
+  (* This is to illustrate how cross version modules can be defined *)
+  let ser_version = "0"
+    type t_serial =
+    {
+      (* sign_symbols  : sym StrMap.t ;*)
+        sign_path     : Path.t
+      ; o_field       : string
+    (* ; sign_deps     : dep_data Path.Map.t *)
+    (* ; sign_builtins : sym StrMap.t *)
+    (* ; sign_ind      : ind_data SymMap.t
+    ; sign_cp_pos   : cp_pos list SymMap.t *)
+    }
+    [@@deriving yojson]
+
+  let of_sign_serializable (s:t_serial) : Sign.t =
+    let _ = s.o_field in (*Old field o_field is just ignored here*)
+    (* sign_symbol didnt exist in older versions. Use a default value *)
+    { sign_symbols = ref StrMap.empty
+    ; sign_path = s.sign_path
+    (*In latest version, this field is not serialized
+    but is (re)computed from other fields *)
+    ; sign_deps = ref ((fun _ -> Path.Map.empty) s)
+    ; sign_builtins = ref StrMap.empty
+    ; sign_ind = ref SymMap.empty
+    ; sign_cp_pos = ref SymMap.empty
+    }
+
+  let to_sign_serializable (s:Sign.t) : t_serial =
+    { o_field = "This filed has been removed" (* defaul or calculated value *)
+    ; sign_path = s.sign_path
+    (* All other fields are just ignored *)
+    }
+
+    let of_yojson json =
+      match t_serial_of_yojson json with
+      | Ok ser -> Ok (of_sign_serializable ser)
+      | Error e -> Error e
+    let to_yojson s = t_serial_to_yojson (to_sign_serializable s)
+end
+
+let to_yojson_with_version (t : Sign.t) (ser : (module Serialisation))
+: Yojson.Safe.t =
+  let module M = (val ser : Serialisation) in
+  match M.to_yojson t with
   | `Assoc fields ->
-    `Assoc (("version", `String version) :: fields)
+    `Assoc (("version", `String M.ser_version) :: fields)
   | _ -> assert false
 
 let select_serialization_module version =
     match version with
     | "1.0.0" -> (module Latest : Serialisation)
-    | _ -> raise (Failure
-          ("Unable to import from version " ^ version ^
-          " to current version" ^ Latest.ser_version ^ "." ^
-          "Please define a compatibility module" ^ version ^ " to " ^
-          Latest.ser_version))
+    | "0"     -> (module Version_0 : Serialisation)
+    | _       -> raise (Failure
+                ("Unable to import from version " ^ version ^
+                " to current version" ^ Latest.ser_version ^ "." ^
+                "Please define a compatibility module" ^ version ^ " to " ^
+                Latest.ser_version))
 
 let of_yojson_with_version json =
   let version =
@@ -259,22 +303,25 @@ let of_yojson_with_version json =
 
 
 (** [write sign file] writes the signature [sign] to the file [fname]. *)
-let write : Sign.t -> string -> unit = fun sign fname ->
+let write : Sign.t -> string -> (module Serialisation) -> unit =
+  fun sign fname s ->
   (* [Unix.fork] is used to safely [unlink] and write an object file, while
      preserving a valid copy of the written signature in the parent
      process. *)
+  let module M = (val s : Serialisation) in
   match Unix.fork () with
   | 0 -> let oc = open_out fname in
          unlink sign;
          let sign_json =
-          to_yojson_with_version sign Latest.ser_version in
+          to_yojson_with_version sign (module M) in
          let _pp = Yojson.Safe.pretty_to_string sign_json in
          Yojson.Safe.to_channel oc sign_json;
          (* Marshal.to_channel oc sign [Marshal.Closures]; *)
          close_out oc; Stdlib.(Debug.do_print_time := false); exit 0
   | i -> ignore (Unix.waitpid [] i); Stdlib.(Debug.do_print_time := true)
 
-let write s n = Debug.(record_time Writing (fun () -> write s n))
+let write s n (ser : (module Serialisation)) =
+  Debug.(record_time Writing (fun () -> write s n ser))
 
 (** [read fname] reads a signature from the object file [fname]. Note that the
     file can only be read properly if it was build with the same binary as the
@@ -400,7 +447,7 @@ let%test "rev" =
             (Path.Map.add (Path.ghost "path_here") dep_data Path.Map.empty)
     ; sign_builtins     = Timed.ref symbols
     } in
-  write sign "/tmp/test_sign_read_write.json";
+  write sign "/tmp/test_sign_read_write.json" (module Latest);
   let r_sign = read "/tmp/test_sign_read_write.json" in
 
   sign.sign_path = r_sign.sign_path &&
@@ -415,3 +462,13 @@ let%test "rev" =
     (Timed.(!)(sign.sign_symbols))
     (Timed.(!)(r_sign.sign_symbols))
      )
+
+let%test "versions" =
+  let sign = Ghost.sign in
+  let sign = {sign
+      with sign_path = Path.make "test/Path/here"
+    } in
+  write sign "/tmp/test_sign_read_write.json" (module Version_0);
+  let r_sign = read "/tmp/test_sign_read_write.json" in
+
+  sign.sign_path = r_sign.sign_path

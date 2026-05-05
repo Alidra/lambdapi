@@ -66,7 +66,7 @@ let rec compile_with :
       Sign.strip_private sign;
       if Stdlib.(!gen_obj) then begin
         Console.out 2 (Color.blu "Writing \"%s\" ...")obj;
-        Sig_serialize.write sign obj
+        Sig_serialize.(write sign obj (module Latest))
       end;
       loading := List.tl !loading;
       sign
