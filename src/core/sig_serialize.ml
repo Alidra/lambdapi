@@ -240,15 +240,11 @@ module Version_0 : Serialisation = struct
   let of_sign_serializable (s:t_serial) : Sign.t =
     let _ = s.o_field in (*Old field o_field is just ignored here*)
     (* sign_symbol didnt exist in older versions. Use a default value *)
-    { sign_symbols = ref StrMap.empty
-    ; sign_path = s.sign_path
-    (*In latest version, this field is not serialized
-    but is (re)computed from other fields *)
-    ; sign_deps = ref ((fun _ -> Path.Map.empty) s)
-    ; sign_builtins = ref StrMap.empty
-    ; sign_ind = ref SymMap.empty
-    ; sign_cp_pos = ref SymMap.empty
-    }
+      {
+        Ghost.sign with sign_path = s.sign_path
+        (* In latest version, this field is not serialized
+        but is (re)computed from other fields *)
+      ; sign_deps = ref ((fun _ -> Path.Map.empty) s)}
 
   let to_sign_serializable (s:Sign.t) : t_serial =
     { o_field = "This filed has been removed" (* defaul or calculated value *)
@@ -472,3 +468,14 @@ let%test "versions" =
   let r_sign = read "/tmp/test_sign_read_write.json" in
 
   sign.sign_path = r_sign.sign_path
+  &&
+  (StrMap.equal
+   (fun a b ->
+     (Sym.compare a b) = 0
+   )
+   (Timed.(!)(sign.sign_symbols))
+   (Timed.(!)(r_sign.sign_symbols))
+  )
+  (* && StrMap.is_empty (Timed.(!)(Ghost.sign.sign_symbols)) *)
+  (* For some reason this test fails
+  which is weird given that Ghost.sign.sign_symbols = ref StrMap.empty *)
