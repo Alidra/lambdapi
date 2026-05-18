@@ -1617,10 +1617,27 @@ and ssearch (lb:lexbuf): search =
   if log_enabled() then log "%s" __FUNCTION__;
   let cq = csearch lb in
   match current_token() with
+
   | SEMICOLON ->
-      let cqs = list (prefix SEMICOLON csearch) lb in
-      List.fold_left (fun x cq -> QOp(x,Union,cq)) cq cqs
-  | _ ->
+      let previous_token = !the_current_token in
+      consume_token lb;
+      (match current_token() with
+        | UID "name"
+        | TYPE_QUERY
+        | UID "anywhere"
+        | RULE
+        | UID "spine"
+        | UID "concl"
+        | UID "hyp"
+        | UID "lhs"
+        | UID "rhs"
+        | L_PAREN ->
+            begin
+              let cqs = list (csearch) lb in
+              List.fold_left (fun x cq -> QOp(x,Union,cq)) cq cqs
+            end
+        | _ -> the_current_token := previous_token; cq)
+    | _ ->
       cq
 
 and search (lb:lexbuf): search =
