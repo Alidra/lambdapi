@@ -93,9 +93,26 @@ let handle : Sig_state.t -> proof_state option -> p_query -> result =
       let i = try int_of_string i with Failure _ ->
                 fatal pos "Too big number (max is %d)." max_int in
       if i < 0 then fatal pos "Negative number.";
+      let version =
+          (* Trick to check whether the watermark has been substituted. *)
+          if "%%VERSION%%" <> "%%" ^ "VERSION%%" then "%%VERSION%%" else
+          (* If not, we fallback to git version. *)
+          let cmd = "git describe --dirty --always" in
+          let (oc, ic, ec) = Unix.open_process_full cmd (Unix.environment ())
+        in
+          let version =
+            try Printf.sprintf "dev-%s" (input_line oc)
+            with End_of_file -> "unknown"
+          in
+          match Unix.close_process_full (oc, ic, ec) with
+          | Unix.WEXITED(0) -> version
+          | _               -> "unknown" in
       if !Console.verbose = 0 then
-        (Console.verbose := i; Console.out 1 "verbose %i" i)
-      else (Console.out 1 "verbose %i" i; Console.verbose := i);
+        (Console.verbose := i;
+        Console.out 1 ((format_of_string "%s") ^^ " : verbose %i") version i)
+      else
+        (Console.out 1 ((format_of_string "%s") ^^ " : verbose %i") version i;
+        Console.verbose := i);
       None
   | P_query_flag("",_) ->
       let f n _ l = n::l in
