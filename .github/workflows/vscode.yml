@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/vscode.yml'
-      - 'editors/vscode/Makefile2'
+      - 'editors/vscode/Makefile'
       # - 'editors/vscode/src/*.ts'
       # - 'editors/vscode/**.json'
   workflow_dispatch:
