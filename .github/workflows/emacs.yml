@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
   push:
     paths:
-      - '.github/workflows/emacs.yml2'
+      - '.github/workflows/emacs.yml'
       # - 'editors/emacs/**'
   workflow_dispatch:
 
