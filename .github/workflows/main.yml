@@ -3,19 +3,19 @@ on:
     types: [opened, synchronize, reopened]
   push:
     paths:
-      - '.github/workflows/main.yml'
-      - 'lambdapi.opam'
-      - 'Makefile'
-      - 'dune-project'
-      - '**/dune'
-      - '**.ml'
-      - '**.mli'
-      - '**.mll'
-      - '**.mly'
-      - '**.dk'
-      - '**.lp'
-      - 'tests/lambdapi.pkg'
-      - '**/*.sh'
+      - '.github/workflows/main.yml2'
+      # - 'lambdapi.opam'
+      # - 'Makefile'
+      # - 'dune-project'
+      # - '**/dune'
+      # - '**.ml'
+      # - '**.mli'
+      # - '**.mll'
+      # - '**.mly'
+      # - '**.dk'
+      # - '**.lp'
+      # - 'tests/lambdapi.pkg'
+      # - '**/*.sh'
   workflow_dispatch:
 
 jobs:

@@ -3,10 +3,10 @@ on:
     types: [opened, synchronize, reopened]
   push:
     paths:
-      - '.github/workflows/vscode.yml'
-      - 'editors/vscode/Makefile'
-      - 'editors/vscode/src/*.ts'
-      - 'editors/vscode/**.json'
+      # - '.github/workflows/vscode.yml'
+      - 'editors/vscode/Makefile2'
+      # - 'editors/vscode/src/*.ts'
+      # - 'editors/vscode/**.json'
   workflow_dispatch:
 jobs:
   vscode:

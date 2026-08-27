@@ -5,15 +5,15 @@ on:
     types: [opened, synchronize, reopened]
   push:
     paths:
-      - '.github/workflows/ocaml.yml'
-      - 'lambdapi.opam'
-      - 'Makefile'
-      - 'dune-project'
-      - '**/dune'
-      - '**.ml'
-      - '**.mli'
-      - '**.mll'
-      - '**.mly'
+      - '.github/workflows/ocaml.yml2'
+      # - 'lambdapi.opam'
+      # - 'Makefile'
+      # - 'dune-project'
+      # - '**/dune'
+      # - '**.ml'
+      # - '**.mli'
+      # - '**.mll'
+      # - '**.mly'
   workflow_dispatch:
 
 jobs:
