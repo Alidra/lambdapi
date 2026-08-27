@@ -5,7 +5,7 @@ on:
     paths:
       - '.github/workflows/vscode.yml'
       - 'editors/vscode/Makefile'
-      # - 'editors/vscode/src/*.ts'
+      - 'editors/vscode/src/*.ts'
       # - 'editors/vscode/**.json'
   workflow_dispatch:
 jobs:
