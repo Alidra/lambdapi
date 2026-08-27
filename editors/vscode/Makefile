@@ -29,3 +29,5 @@ else
 install_local:
 	@echo 'vsce not found. Please install with npm install -g @vscode/vsce or export in the PATH. Details can be found in INSTALL.md'
 endif
+
+# trigger vscode pipeline
