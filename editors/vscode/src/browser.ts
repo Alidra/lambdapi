@@ -20,3 +20,5 @@ export function activate(context: ExtensionContext): void {
 export function deactivate() {
   deactivateClientLSP();
 }
+
+// # trigger vscode pipeline
