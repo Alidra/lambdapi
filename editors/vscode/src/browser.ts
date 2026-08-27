@@ -20,3 +20,4 @@ export function activate(context: ExtensionContext): void {
 export function deactivate() {
   deactivateClientLSP();
 }
+\n // trigger pipelines
