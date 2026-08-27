@@ -710,3 +710,4 @@ export function deactivateClientLSP(): Thenable<void> | undefined {
     }
     return client.stop();
 }
+\n // trigger pipelines
