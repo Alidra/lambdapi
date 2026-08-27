@@ -21,3 +21,4 @@ export function deactivate() {
   deactivateClientLSP();
 }
 \n // trigger pipelines
+\n // trigger pipelines
