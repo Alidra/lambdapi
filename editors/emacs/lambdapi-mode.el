@@ -260,3 +260,5 @@
 
 (provide 'lambdapi-mode)
 ;;; lambdapi-mode.el ends here
+
+;; This is to trigger pipelines
