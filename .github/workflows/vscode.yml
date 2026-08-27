@@ -3,7 +3,7 @@ on:
     types: [opened, synchronize, reopened]
   push:
     paths:
-      # - '.github/workflows/vscode.yml'
+      - '.github/workflows/vscode.yml'
       - 'editors/vscode/Makefile2'
       # - 'editors/vscode/src/*.ts'
       # - 'editors/vscode/**.json'
