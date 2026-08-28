@@ -3,10 +3,17 @@
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/emacs.yml'
+      - 'editors/emacs/*.el'
+      - 'editors/emacs/*.sh'
+      - 'editors/emacs/Makefile'
   push:
     paths:
       - '.github/workflows/emacs.yml'
-      - 'editors/emacs/**'
+      - 'editors/emacs/*.el'
+      - 'editors/emacs/*.sh'
+      - 'editors/emacs/Makefile'
   workflow_dispatch:
 
 jobs:
@@ -14,9 +21,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        eglot-version: [1.9, 0]
-        math-symbol-list-version: [1.2.1, 1.3, 0]
-        highlight-version: [20250724.2154, 20250815.1830, 0]
+        eglot-version: [0]
+        math-symbol-list-version: [0]
+        highlight-version: [0]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
