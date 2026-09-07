@@ -133,6 +133,9 @@ let process_cmd _file (nodes,st,dg,logs) cmd =
   | Cmd_Error(err_loc, err_msg) ->
     let nodes = { cmd; exec = false; goals = [] } :: nodes in
     let loc, diag_msg, log_msg = match cmd_loc, err_loc with
+    | None, _ -> assert false
+    | _, None -> assert false
+    (* in case there is no error position, we use the command position. *)
     | _, Some None -> cmd_loc, err_msg, err_msg
     | Some l, Some Some l' ->
         if l.fname = l'.fname then
@@ -156,8 +159,6 @@ let process_cmd _file (nodes,st,dg,logs) cmd =
           cmd_loc,
           Pos.popt_to_string (Some l') ^ "\n" ^ err_msg,
           Pos.popt_to_string (Some l') ^ "\n" ^ err_msg
-    | None, _ -> assert false
-    | _, None -> assert false
     in
     nodes, st, (loc, 1, diag_msg, None) :: dg, ((1, log_msg), loc) :: logs
 
@@ -219,7 +220,7 @@ let check_text ~doc =
   let logs, diags =
     match error with
     | None -> logs, diags
-    | Some(pos,msg) ->
+    | Some(error_pos,error_msg) ->
       let log_msg =
         let form = Format.formatter_of_buffer lp_logger in
         Color.update_with_color form;
@@ -227,11 +228,12 @@ let check_text ~doc =
         (Pos.popt_to_string
           ~print_dirname:false
           ~print_fname:false
-          (Some pos)) msg;
+          (Some error_pos)) error_msg;
         Format.pp_print_flush form ();
         buf_get_and_clear lp_logger
       in
-      logs @ [((1, log_msg),Some pos)], diags @ [pos,1,msg,None]
+      logs @ [((1, log_msg),Some error_pos)],
+      diags @ [error_pos,1,error_msg,None]
   in
   let map = Pure.rangemap cmds in
   let doc = { doc with nodes; final=Some(final); map; logs } in
