@@ -54,6 +54,18 @@ let buf_get_and_clear buf =
   let res = Buffer.contents buf in
   Buffer.clear buf; res
 
+(* Format an error message with its position for logging. *)
+let format_error_msg error_msg error_pos =
+  let form = Format.formatter_of_buffer lp_logger in
+  Color.update_with_color form;
+  Format.fprintf (form) (Color.red "[%s] %s")
+    (Pos.popt_to_string
+      ~print_dirname:false
+      ~print_fname:false
+      (Some error_pos)) error_msg;
+  Format.pp_print_flush form ();
+  buf_get_and_clear lp_logger
+
 let process_pstep (pstate,diags,logs) tac nb_subproofs =
   let open Pure in
   let tac_loc = Tactic.get_pos tac in
@@ -142,16 +154,7 @@ let process_cmd _file (nodes,st,dg,logs) cmd =
           (* if the error is in the same file as the command,
             we set the diag/log position to the error position
             and add the error position in the log message *)
-          let log_msg =
-            let form = Format.formatter_of_buffer lp_logger in
-            Color.update_with_color form;
-            Format.fprintf (form) (Color.red "[%s] %s") (Pos.popt_to_string
-              ~print_dirname:false
-              ~print_fname:false
-              (Some l')) err_msg;
-            Format.pp_print_flush form ();
-            buf_get_and_clear lp_logger
-          in
+          let log_msg = format_error_msg err_msg l' in
           Some l', err_msg, log_msg
         else
           (* otherwise we set the diag/log position to the command position
@@ -221,17 +224,7 @@ let check_text ~doc =
     match error with
     | None -> logs, diags
     | Some(error_pos,error_msg) ->
-      let log_msg =
-        let form = Format.formatter_of_buffer lp_logger in
-        Color.update_with_color form;
-        Format.fprintf (form) (Color.red "[%s] %s")
-        (Pos.popt_to_string
-          ~print_dirname:false
-          ~print_fname:false
-          (Some error_pos)) error_msg;
-        Format.pp_print_flush form ();
-        buf_get_and_clear lp_logger
-      in
+      let log_msg = format_error_msg error_msg error_pos in
       logs @ [((1, log_msg),Some error_pos)],
       diags @ [error_pos,1,error_msg,None]
   in
