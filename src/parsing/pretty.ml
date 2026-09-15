@@ -227,7 +227,8 @@ let proof_end : p_proof_end pp = fun ppf pe ->
   out ppf (match pe.elt with
            | P_proof_end   -> "end"
            | P_proof_admitted -> "admitted"
-           | P_proof_abort -> "abort")
+           | P_proof_abort -> "abort"
+           | P_proof_missing -> assert false)
 
 let rwpatt : p_rwpatt pp = fun ppf p ->
   match p.elt with

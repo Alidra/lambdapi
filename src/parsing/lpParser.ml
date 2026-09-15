@@ -1061,7 +1061,9 @@ and proof_end (lb:'token lexbuf): p_proof_end =
       consume_token lb;
       make_pos pos1 Syntax.P_proof_end
   | _ ->
-      expected lb "" proof_end_tks
+    let pos1 = current_pos lb in
+    make_pos pos1 Syntax.P_proof_missing
+      (* expected lb "" proof_end_tks *)
 
 and tactic_tks() =
   [ADMIT;ALL_HYPS;APPLY;ASSUME;ASSUMPTION;CHANGE;EVAL;FAIL;FIRST_HYP;FOCUS;

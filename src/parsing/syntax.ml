@@ -382,6 +382,8 @@ type p_proof_end_aux =
   (** Give up current state and admit the theorem. *)
   | P_proof_abort
   (** Abort the proof (theorem not admitted). *)
+  | P_proof_missing
+  (** end tocken is missing. *)
 
 type p_proof_end = p_proof_end_aux loc
 
