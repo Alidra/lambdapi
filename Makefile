@@ -39,6 +39,7 @@ test: lambdapi
 
 .PHONY: test_load
 test_load: lambdapi
+	echo "ceci est test_load"
 	@tests/test_load.sh
 
 .PHONY: test_export_dk
