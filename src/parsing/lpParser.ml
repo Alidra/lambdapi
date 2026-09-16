@@ -488,16 +488,32 @@ let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
          match current_token lb with
          | BEGIN ->
              consume_token lb;
-             let p_sym_prf = Some (proof lb) in
              let p_sym_def = false in
+             let p_sym_prf = Some (
+                try
+                    proof lb
+                with
+                UnfinishedProof(m, sym) ->
+                    raise(UnfinishedProof (m,
+                    {p_sym_mod; p_sym_kw; p_sym_nam; p_sym_arg; p_sym_typ;
+                        p_sym_trm=None; p_sym_def; p_sym_prf=sym.p_sym_prf}))
+             ) in
              let sym =
                {p_sym_mod; p_sym_kw; p_sym_nam; p_sym_arg; p_sym_typ;
                 p_sym_trm=None; p_sym_def; p_sym_prf}
              in P_symbol(sym)
          | ASSIGN ->
              consume_token lb;
-             let p_sym_trm, p_sym_prf = term_proof lb in
              let p_sym_def = true in
+             let p_sym_trm, p_sym_prf = try
+                    term_proof lb
+                with
+                UnfinishedProof(m, sym) ->
+                    raise(UnfinishedProof (m,
+                    {p_sym_mod; p_sym_kw; p_sym_nam; p_sym_arg; p_sym_typ;
+                        p_sym_trm=sym.p_sym_trm; p_sym_def;
+                        p_sym_prf=sym.p_sym_prf}))
+             in
              let sym =
                {p_sym_mod; p_sym_kw; p_sym_nam; p_sym_arg; p_sym_typ;
                 p_sym_trm; p_sym_def; p_sym_prf}
@@ -515,9 +531,9 @@ let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
        end
    | ASSIGN ->
        consume_token lb;
-       let p_sym_trm, p_sym_prf = term_proof lb in
        let p_sym_def = true in
        let p_sym_typ = None in
+       let p_sym_trm, p_sym_prf = term_proof lb in
        let sym =
          {p_sym_mod; p_sym_kw; p_sym_nam; p_sym_arg; p_sym_typ;
           p_sym_trm; p_sym_def; p_sym_prf}
@@ -937,7 +953,13 @@ and term_proof (lb:'token lexbuf):
   match current_token lb with
   | BEGIN ->
       consume_token lb;
-      let p = proof lb in
+      let p =  try
+                    proof lb
+                with
+                UnfinishedProof(m, sym) ->
+                    raise(UnfinishedProof (m,
+                    {sym with p_sym_trm=None}))
+             in
       None, Some p
   (* bterm *)
   | BACKQUOTE
@@ -960,7 +982,13 @@ and term_proof (lb:'token lexbuf):
   | STRINGLIT _ ->
       let t = term lb in
       if opt BEGIN lb then
-       let p = proof lb in
+       let p = try
+                    proof lb
+                with
+                UnfinishedProof(m, sym) ->
+                    raise(UnfinishedProof (m,
+                    {sym with p_sym_trm=Some t}))
+             in
        Some t, Some p
       else
        Some t, None
