@@ -975,7 +975,24 @@ and proof (lb:'token lexbuf): p_proof * p_proof_end =
   | L_CU_BRACKET ->
       let l = nelist subproof_tks subproof lb in
       if current_token lb = SEMICOLON then consume_token lb;
-      let pe = proof_end lb in
+      let pe =
+        try
+            proof_end lb
+        with SyntaxError (_, msg_loc) ->
+            let sym =
+                { p_sym_mod = []
+                ; p_sym_kw  = msg_loc.pos
+                ; p_sym_nam = msg_loc
+                ; p_sym_arg = []
+                ; p_sym_typ = None
+                ; p_sym_trm = None
+                ; p_sym_prf =
+                  Some (l, let pos1 = current_pos lb in
+                      Pos.make_pos pos1 Syntax.P_proof_unfinished)
+                ; p_sym_def = false
+            } in
+            raise (UnfinishedProof (msg_loc, sym))
+        in
       l, pe
   (*queries*)
   | ASSERT _
@@ -1015,12 +1032,46 @@ and proof (lb:'token lexbuf): p_proof * p_proof_end =
   | TRY
   | WHY3 ->
       let l = steps lb in
-      let pe = proof_end lb in
+      let pe =
+        try
+            proof_end lb
+        with SyntaxError (_, msg_loc) ->
+            let sym =
+                { p_sym_mod = []
+                ; p_sym_kw  = msg_loc.pos
+                ; p_sym_nam = msg_loc
+                ; p_sym_arg = []
+                ; p_sym_typ = None
+                ; p_sym_trm = None
+                ; p_sym_prf =
+                  Some ([l], let pos1 = current_pos lb in
+                      Pos.make_pos pos1 Syntax.P_proof_unfinished)
+                ; p_sym_def = false
+            } in
+            raise (UnfinishedProof (msg_loc, sym))
+        in
       [l], pe
   | END
   | ABORT
   | ADMITTED ->
-      let pe = proof_end lb in
+      let pe =
+        try
+            proof_end lb
+        with SyntaxError (_, msg_loc) ->
+            let sym =
+                { p_sym_mod = []
+                ; p_sym_kw  = msg_loc.pos
+                ; p_sym_nam = msg_loc
+                ; p_sym_arg = []
+                ; p_sym_typ = None
+                ; p_sym_trm = None
+                ; p_sym_prf =
+                  Some ([], let pos1 = current_pos lb in
+                      Pos.make_pos pos1 Syntax.P_proof_unfinished)
+                ; p_sym_def = false
+            } in
+            raise (UnfinishedProof (msg_loc, sym))
+        in
       [], pe
   | _ ->
     expected lb
