@@ -90,6 +90,13 @@ let parse_text :
     Stream.iter (fun c -> Stdlib.(cmds := c :: !cmds)) (parse_string fname s);
     List.rev Stdlib.(!cmds), None
   with
+  | Parsing.LpLexer.UnfinishedProof (msg_loc, sym) ->
+    let cmd = Syntax.P_symbol sym in
+    let cmd : Syntax.p_command = {Pos.elt=cmd;Pos.pos=sym.p_sym_kw} in
+    Stdlib.(cmds := cmd :: !cmds);
+    let loc = match msg_loc.pos with
+    | Some pos -> pos | None -> assert false in
+    List.rev Stdlib.(!cmds), Some(loc, msg_loc.elt)
   | Fatal(Some(Some(pos)), msg, err_desc) ->
       List.rev Stdlib.(!cmds), Some(pos, msg ^ "\n" ^ err_desc)
   | Fatal(Some(None)     , _  , _) -> assert false
