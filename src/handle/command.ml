@@ -565,6 +565,7 @@ let get_proof_data : compiler -> sig_state -> p_command -> cmd_output =
             (* Add the symbol in the signature. *)
             fst (Sig_state.add_symbol
                    ss expo prop mstrat opaq p_sym_nam declpos a impl d)
+        | P_proof_unfinished
         | P_proof_end ->
             (* Check that the proof is indeed finished. *)
             if not (finished ps) then
@@ -580,7 +581,6 @@ let get_proof_data : compiler -> sig_state -> p_command -> cmd_output =
             Console.out 2 (Color.gre "symbol %a : %a") uid id term a;
             fst (Sig_state.add_symbol
                    ss expo prop mstrat opaq p_sym_nam declpos a impl d)
-        | P_proof_unfinished -> assert false
       in
       (* Create the proof state. *)
       let pdata_state =

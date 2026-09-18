@@ -91,12 +91,27 @@ let parse_text :
     List.rev Stdlib.(!cmds), None
   with
   | Parsing.LpLexer.UnfinishedProof (msg_loc, sym) ->
-    let cmd = Syntax.P_symbol sym in
-    let cmd : Syntax.p_command = {Pos.elt=cmd;Pos.pos=sym.p_sym_kw} in
+    let l = match sym.p_sym_prf
+      with | Some (l,_e) -> l | None -> assert false
+    in
+    let cmd =
+      Syntax.P_symbol
+        { sym with
+          p_sym_prf =
+            match sym.p_sym_prf with
+            | Some (l,e) ->
+                Some (l, { e with elt = Parsing.Syntax.P_proof_end })
+            | None -> assert false
+        }
+    in
+    let cmd : Syntax.p_command = {Pos.elt=cmd; Pos.pos=sym.p_sym_kw} in
     Stdlib.(cmds := cmd :: !cmds);
     let loc = match msg_loc.pos with
     | Some pos -> pos | None -> assert false in
-    List.rev Stdlib.(!cmds), Some(loc, msg_loc.elt)
+    let goal =
+      List.rev Stdlib.(!cmds),
+      Some (loc, msg_loc.elt ^ "there are goals :"
+        ^ string_of_int (List.length l))
   | Fatal(Some(Some(pos)), msg, err_desc) ->
       List.rev Stdlib.(!cmds), Some(pos, msg ^ "\n" ^ err_desc)
   | Fatal(Some(None)     , _  , _) -> assert false
