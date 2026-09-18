@@ -473,6 +473,24 @@ let open_ (req:bool) (priv:bool) (lb:'token lexbuf) : p_command_aux =
  let ps = nelist path_tks path lb in
  if req then P_require(Some priv,ps) else P_open(kw_pos,priv,ps)
 
+let default_endproof l lb msg_loc =
+    let _sym =
+            { p_sym_mod = []
+            ; p_sym_kw = msg_loc.pos
+            ; p_sym_nam = msg_loc
+            ; p_sym_arg = []
+            ; p_sym_typ = None
+            ; p_sym_trm = None
+            ; p_sym_prf =
+                Some (l, let pos1 = current_pos lb in
+                  Pos.make_pos pos1 Syntax.P_proof_end)
+            ; p_sym_def = false
+            } in
+        let pos1 = current_pos lb in
+        (* consume_token lb; *)
+        make_pos pos1 Syntax.P_proof_end
+            (* raise (UnfinishedProof (msg_loc, sym)) *)
+
 let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
  if log_enabled() then log "%s" __FUNCTION__;
  let p_sym_kw = Some(locate (current_pos lb)) in
@@ -975,7 +993,12 @@ and proof (lb:'token lexbuf): p_proof * p_proof_end =
   | L_CU_BRACKET ->
       let l = nelist subproof_tks subproof lb in
       if current_token lb = SEMICOLON then consume_token lb;
-      let pe = proof_end lb in
+      let pe =
+        try
+            proof_end lb
+        with SyntaxError (_, msg_loc) ->
+             default_endproof l lb msg_loc
+      in
       l, pe
   (*queries*)
   | ASSERT _
@@ -1015,12 +1038,22 @@ and proof (lb:'token lexbuf): p_proof * p_proof_end =
   | TRY
   | WHY3 ->
       let l = steps lb in
-      let pe = proof_end lb in
+      let pe =
+        try
+            proof_end lb
+        with SyntaxError (_, msg_loc) ->
+            default_endproof [l] lb msg_loc
+      in
       [l], pe
   | END
   | ABORT
   | ADMITTED ->
-      let pe = proof_end lb in
+      let pe =
+        try
+            proof_end lb
+        with SyntaxError (_, msg_loc) ->
+            default_endproof [] lb msg_loc
+      in
       [], pe
   | _ ->
     expected lb
@@ -1786,4 +1819,4 @@ let command (lb:'token lexbuf): p_command =
    let c = command lb in
    match current_token lb with
    | SEMICOLON -> c
-   | _ -> expected lb "" [SEMICOLON]
+   | t -> expected lb "" [SEMICOLON]

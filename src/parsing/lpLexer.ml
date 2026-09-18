@@ -13,6 +13,8 @@ let remove_last : lexbuf -> string = fun lb ->
 let remove_ends : lexbuf -> string = fun lb ->
   Utf8.sub_lexeme lb 1 (lexeme_length lb - 2)
 
+exception UnfinishedProof of strloc * Syntax.p_symbol
+
 (* true when the error is an unrecoverable tokenization error;
    false when it is a potentially recoverable parsing error *)
 exception SyntaxError of bool * strloc
