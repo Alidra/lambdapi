@@ -1853,4 +1853,14 @@ let command (lb:'token lexbuf): p_command =
    let c = command lb in
    match current_token lb with
    | SEMICOLON -> c
-   | t -> expected lb "" [SEMICOLON]
+   | t ->
+    (* if c is a proof, raise UnfinishedProof exeption to keep the goals*)
+        match c with
+        | {elt=P_symbol sym; pos} ->
+            begin
+                try
+                expected lb "" [SEMICOLON]
+                with SyntaxError(_,str_loc) ->
+                raise (UnfinishedProof(str_loc, sym, pos))
+            end
+        | _ -> expected lb "" [SEMICOLON]
