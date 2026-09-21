@@ -71,7 +71,10 @@ let rec compile : Command.compiler = fun ss mp ->
         loading := List.tl !loading;
         sign
       with LpLexer.UnfinishedProof(log_msg, _, _) ->
-        raise (Common.Error.fatal log_msg.pos "%s" log_msg.elt);
+        let pos, msg = match log_msg with
+        | {pos=Some pos;elt} -> pos,elt
+        |_ -> assert false in
+        Parsing.Parser.parser_fatal pos "Syntax error. %s" msg
     end
     else
     begin
