@@ -489,7 +489,7 @@ let missing_end_proof l pos1 msg_loc =
         let p =
             make_pos pos1 Syntax.P_proof_end in
         let _ = sym, p in
-        raise (UnfinishedProof (msg_loc, sym))
+        raise (UnfinishedProof (msg_loc, sym, None))
 
 let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
  if log_enabled() then log "%s" __FUNCTION__;
@@ -513,9 +513,9 @@ let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
              let p_sym_prf =
                 try
                     Some (proof lb)
-                with UnfinishedProof (m, s) ->
-                    raise
-                    (UnfinishedProof (m, {sym with p_sym_prf=s.p_sym_prf}))
+                with UnfinishedProof (m, s, _) ->
+                    raise (UnfinishedProof
+                        (m, {sym with p_sym_prf=s.p_sym_prf}, None))
             in
             P_symbol({sym with p_sym_prf})
          | ASSIGN ->
@@ -527,10 +527,10 @@ let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
              let p_sym_trm, p_sym_prf =
                 try
                     term_proof lb
-                with UnfinishedProof(m, s) ->
+                with UnfinishedProof(m, s, _) ->
                     raise
                     (UnfinishedProof (m, {sym with
-                    p_sym_trm=s.p_sym_trm; p_sym_prf=s.p_sym_prf}))
+                    p_sym_trm=s.p_sym_trm; p_sym_prf=s.p_sym_prf}, None))
              in P_symbol({sym with p_sym_trm; p_sym_prf})
          | SEMICOLON ->
              let p_sym_trm = None in
@@ -552,10 +552,10 @@ let rec symbol (p_sym_mod:p_modifier list) (lb:'token lexbuf): p_command_aux =
           p_sym_trm=None; p_sym_def; p_sym_prf=None} in
        let p_sym_trm, p_sym_prf = try
             term_proof lb
-        with UnfinishedProof(m, s) ->
+        with UnfinishedProof(m, s, _) ->
             raise
             (UnfinishedProof (m, {sym with
-            p_sym_trm=s.p_sym_trm; p_sym_prf=s.p_sym_prf}))
+            p_sym_trm=s.p_sym_trm; p_sym_prf=s.p_sym_prf}, None))
        in P_symbol({sym with p_sym_trm; p_sym_prf})
    | _ ->
        expected lb "" [COLON;ASSIGN]
@@ -578,6 +578,7 @@ and command (lb:'token lexbuf) : p_command =
  if log_enabled() then log "%s" __FUNCTION__;
  let pos1 = current_pos lb in
  let p_sym_mod = list modifier_tks modifier lb in
+ try
  match p_sym_mod with
  | [{elt=P_opaq;_}] ->
     begin match current_token lb with
@@ -706,6 +707,10 @@ and command (lb:'token lexbuf) : p_command =
          [REQUIRE;OPEN;SYMBOL;L_PAREN;L_SQ_BRACKET;INDUCTIVE;RULE;UNIF_RULE;
           COERCE_RULE;BUILTIN;NOTATION] @ (query_tks()))
     end
+    with UnfinishedProof (m, sym, _) ->
+    let {elt; pos} = extend_pos lb (*__FUNCTION__*) pos1 (sym) in
+    raise (UnfinishedProof (m, sym, pos))
+
 
 and inductive (lb:'token lexbuf): p_inductive =
   let pos0 = current_pos lb in
@@ -975,9 +980,9 @@ and term_proof (lb:'token lexbuf):
       let p =
         try
             proof lb
-        with UnfinishedProof(m, s) ->
+        with UnfinishedProof(m, s, _) ->
             raise
-            (UnfinishedProof (m, {s with p_sym_trm=None}))
+            (UnfinishedProof (m, {s with p_sym_trm=None}, None))
         in
       None, Some p
   (* bterm *)
@@ -1004,9 +1009,9 @@ and term_proof (lb:'token lexbuf):
        let p =
         try
             proof lb
-        with UnfinishedProof(m, s) ->
+        with UnfinishedProof(m, s, _) ->
             raise
-            (UnfinishedProof (m, {s with p_sym_trm=Some t}))
+            (UnfinishedProof (m, {s with p_sym_trm=Some t}, None))
         in
        Some t, Some p
       else
