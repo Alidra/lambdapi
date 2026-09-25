@@ -473,6 +473,10 @@ let open_ (req:bool) (priv:bool) (lb:'token lexbuf) : p_command_aux =
  let ps = nelist path_tks path lb in
  if req then P_require(Some priv,ps) else P_open(kw_pos,priv,ps)
 
+(** [missing_end_proof l pos1 msg_loc] builds an empty symbol from the
+    partial proof and raises [UnfinishedProof]. [l] is the parsed proof list;
+    [pos1] is the current position in the buffer and [msg_loc] is the error
+    message and location.*)
 let missing_end_proof l pos1 msg_loc =
     let sym =
             { p_sym_mod = []
