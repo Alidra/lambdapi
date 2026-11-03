@@ -10,9 +10,9 @@ module Command : sig
   type t
   val equal : t -> t -> bool
   val get_pos : t -> Pos.popt
-  val get_elt : t -> Parsing.Syntax.p_command_aux
   (** Expose the parser-level command shape so clients (LSP, MCP, …)
       can pattern-match on declaration forms (e.g. to build outlines). *)
+  val get_elt : t -> Parsing.Syntax.p_command_aux
   val keyword_pos : t -> Pos.popt
   (** Position of the keyword introducing the command ("symbol", "rule",
       "require", …), which is not always at its start: modifiers or
