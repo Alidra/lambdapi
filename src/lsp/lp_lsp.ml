@@ -103,7 +103,7 @@ let do_initialize ofmt ~id params =
     | Some p ->
       (try
          LIO.log_error "initialize" ("applying package config at " ^ p);
-         Parsing.Package.apply_config p
+         Parsing.Package.set_root_path p
        with e ->
          LIO.log_error "initialize"
            ("package config skipped: " ^ Printexc.to_string e))
