@@ -39,6 +39,9 @@ type t = {
   mutable root  : Pure.state option; (* Only mutated after parsing. *)
   mutable final : Pure.state option; (* Only mutated after parsing. *)
   nodes : doc_node list;
+  (* Last parse-error-free nodes, used to retain proof context while
+     the current edit is syntactically incomplete. *)
+  good_nodes : doc_node list;
   (* severity is same as LSP specifications : https://git.io/JiGAB *)
   logs : ((int * string) * Pos.popt) list; (*((severity, message), location)*)
   map : Core.Term.qident RangeMap.t;
@@ -182,6 +185,7 @@ let new_doc ~uri ~version ~text =
     root;
     final = root;
     nodes = [];
+    good_nodes = [];
     logs = logs;
     map = RangeMap.empty;
   }
@@ -229,5 +233,7 @@ let check_text ~doc =
       diags @ [error_pos,1,error_msg,None]
   in
   let map = Pure.rangemap cmds in
-  let doc = { doc with nodes; final=Some(final); map; logs } in
+  let good_nodes =
+    match error with None -> nodes | Some _ -> doc.good_nodes in
+  let doc = { doc with nodes; good_nodes; final=Some(final); map; logs } in
   doc, LSP.mk_diagnostics ~uri ~version diags

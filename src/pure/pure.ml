@@ -214,6 +214,12 @@ let find_sym : state -> Term.qident -> Term.sym option =
 let restore_time : state -> unit =
   fun (t, _) -> Time.restore t
 
+(** Install the document's signature state for correctly qualified
+    printer output. *)
+let set_print_state : state -> unit = fun (time, ss) ->
+  Time.restore time;
+  Print.sig_state := ss
+
 (* Equality tests, important for the incremental engine *)
 
 (* There are two kind of tests for equality:
