@@ -699,13 +699,18 @@ let cmd_index =
   let summary = "Index the given files in a database." in
   let c = add_command
             { name = "index"
-            ; args = "[OPTION …] FILE …"
+            ; args = "[OPTION …] [FILE …]"
             ; summary
-            ; desc = summary
+            ; desc =
+                summary ^ " Files may be omitted when --source is provided."
             ; options = opt_source :: opt_add :: compile_options } in
   fun args ->
   match parse_options c.options args with
-  | [] -> Common.Error.fatal_no_pos "No file provided."
+  | [] when !source = None -> Common.Error.fatal_no_pos "No file provided."
+  | [] ->
+    if not !add then Tool.Indexing.empty ();
+    Option.iter Tool.Indexing.parse_source_map !source;
+    Tool.Indexing.dump()
   | f::files ->
     if not !add then Tool.Indexing.empty ();
     let t0 = Timed.Time.save() in
